@@ -27,5 +27,5 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp() {
-
+    MainScreen()
 }
