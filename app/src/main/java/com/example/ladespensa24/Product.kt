@@ -39,7 +39,7 @@ val productsInStorage = listOf(
     Product("Pan", "1 barra de pan",12.02, "Panaderia", R.drawable.pan, true, true, 50, true),
     Product("Carne", "1k aprox",12.02, "Carniceria", R.drawable.carne, true, true, 50, true),
     Product("Manzana", "180g ",12.02, "Verdura", R.drawable.manzana, true, true, 50, true),
-    Product("lechuga", "",12.02, "Verdura", R.drawable.lechuga, true, true, 50, true)
+    Product("lechuga", "200g",12.02, "Verdura", R.drawable.lechuga, true, true, 50, true)
 )
 
 open class Product(
@@ -245,10 +245,11 @@ fun DiscountedProductCard(product: Product) {
                         .background(Color.Red)
                 ) {
                     Text(
-                        text = product.getDiscount().toString()+ "%",
+                        text = " -" + product.getDiscount().toString()+ "% ",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        color = Color.White
                     )
                 }
                 Button(
