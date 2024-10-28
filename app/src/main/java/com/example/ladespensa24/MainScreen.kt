@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -37,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Preview
 @Composable
@@ -57,16 +62,13 @@ fun MainScreen() {
 fun AppFooter() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(
-            topStart = 16.dp,
-            topEnd = 16.dp
-        ), // Bordes superiores redondeados
-        elevation = CardDefaults.cardElevation(defaultElevation = 100.dp)
+        shape = RectangleShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 40.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFA49458)) // Color de fondo dentro de la Card
+                .background(Color(0xFF855C41)) // Color de fondo dentro de la Card
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -99,29 +101,170 @@ fun AppFooter() {
     }
 }
 
-
 @Composable
 fun MainScreenContent(paddingValues: PaddingValues) {
     Column {
-        Spacer(modifier = Modifier.size(30.dp))
         Box(
             Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(12.dp)
+
         ) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item {
-                    Spacer(modifier = Modifier.size(12.dp))
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.supermarket),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        Text(
+                            text = "INICIO",
+                            fontFamily = FontFamily(Font(R.font.muli)),
+                            color = Color.White,
+                            fontSize = 28.sp,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(16.dp)
+                        )
+                    }
+                }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(30.dp)
+                    ) {
+                        Row (Modifier.fillMaxSize()) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(2f)
+                                    .height(30.dp)
+                                    .background(Color(0xffb5e354))
+                                    .padding(horizontal = 10.dp)
+                            ){
+                                Text(
+                                    text = "EN TENDENCIA AHORA",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(30.dp)
+                                    .padding(horizontal = 10.dp)
+                            ){
+                                Text(
+                                    text = "/ / / / / / / / / / / / / / /",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.Gray,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+
+                        }
+
+                    }
+                    Spacer(modifier = Modifier.size(10.dp))
                     FeaturedLazyRow()
                 }
                 item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(30.dp)
+                    ) {
+                        Row (Modifier.fillMaxSize()) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(30.dp)
+                                    .padding(horizontal = 10.dp)
+                            ){
+                                Text(
+                                    text = "/ / / / / / / / / / / / / / / / / / /",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.Gray,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(2f)
+                                    .height(30.dp)
+                                    .background(Color.Red)
+                                    .padding(horizontal = 10.dp)
+                            ){
+                                Text(
+                                    text = "EN OFERTA",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                    }
                     Spacer(modifier = Modifier.size(12.dp))
                     DiscountedLazyRow()
                 }
                 item {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                    ) {
+                        Row (Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                text = "/ / / / / /",
+                                fontFamily = FontFamily(Font(R.font.muli)),
+                                color = Color.Gray,
+                                fontSize = 22.sp,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Box(Modifier.weight(1.5f).fillMaxHeight().background(Color(0xff6fd5e9))) {
+                                Text(
+                                    text = "NOVEDADES",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.White,
+                                    fontSize = 22.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            }
+                            Text(
+                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                text = "/ / / / / /",
+                                fontFamily = FontFamily(Font(R.font.muli)),
+                                color = Color.Gray,
+                                fontSize = 22.sp,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+
+                    }
                     Spacer(modifier = Modifier.size(12.dp))
                     NewsLazyRow()
+                    Spacer(modifier = Modifier.size(60.dp))
                 }
             }
         }
@@ -206,7 +349,6 @@ fun SearchBarButton() {
         }
     }
 }
-
 
 @Composable
 fun NormalImage(modifier: Modifier, image: Int, tint: Color?) {
