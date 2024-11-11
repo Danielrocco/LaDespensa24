@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import com.example.ladespensa24.ui.theme.LaDespensa24Theme
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +23,9 @@ class MainActivity : ComponentActivity() {
                     MyApp()
                 }
             }
+        window.statusBarColor = ContextCompat.getColor(this, android.R.color.transparent)
+        window.navigationBarColor = ContextCompat.getColor(this, android.R.color.black)
+
         }
     }
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,16 +53,15 @@ fun MainScreen() {
         }, content = { innerPadding ->
             MainScreenContent(innerPadding)
         }, bottomBar = {
-            AppFooter()
+            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth())
         }
     )
 }
 
-@Preview
 @Composable
-fun AppFooter() {
+fun AppFooter(modifier: Modifier) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = RectangleShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 40.dp)
     ) {
@@ -264,7 +264,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                     }
                     Spacer(modifier = Modifier.size(12.dp))
                     NewsLazyRow()
-                    Spacer(modifier = Modifier.size(60.dp))
+                    Spacer(modifier = Modifier.size(70.dp))
                 }
             }
         }
@@ -325,7 +325,8 @@ fun SearchBarButton() {
         onClick = { },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(10.dp)
+            .padding(top = 30.dp),
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 20.dp),
         colors = ButtonDefaults.buttonColors(
             contentColor = Color.Gray,
@@ -342,6 +343,7 @@ fun SearchBarButton() {
             Spacer(modifier = Modifier.size(18.dp))
             Text(
                 text = "Buscar producto",
+                color = Color.Gray,
                 fontFamily = FontFamily(Font(R.font.muli)),
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center

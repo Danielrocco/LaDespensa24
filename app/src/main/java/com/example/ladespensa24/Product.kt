@@ -193,6 +193,7 @@ fun ProductCard(product: Product) {
                 ) {
                     Text(
                         "Añadir a la cesta",
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
@@ -295,6 +296,7 @@ fun DiscountedProductCard(product: Product) {
                 ) {
                     Text(
                         "Añadir a la cesta",
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
@@ -398,6 +400,7 @@ fun NewProductCard(product: Product) {
                 ) {
                     Text(
                         "Añadir a la cesta",
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
