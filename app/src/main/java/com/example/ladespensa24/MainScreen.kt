@@ -91,6 +91,14 @@ fun AppFooter(modifier: Modifier) {
             )
             NormalImage(
                 Modifier
+                    .height(28.dp)
+                    .weight(1f)
+                    .clickable { },
+                R.drawable.corazon,
+                Color.White
+            )
+            NormalImage(
+                Modifier
                     .height(30.dp)
                     .weight(1f)
                     .clickable { },
@@ -179,49 +187,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                     Spacer(modifier = Modifier.size(10.dp))
                     FeaturedLazyRow()
                 }
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(30.dp)
-                    ) {
-                        Row (Modifier.fillMaxSize()) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(30.dp)
-                                    .padding(horizontal = 10.dp)
-                            ){
-                                Text(
-                                    text = "/ / / / / / / / / / / / / / / / / / /",
-                                    fontFamily = FontFamily(Font(R.font.muli)),
-                                    color = Color.Gray,
-                                    fontSize = 18.sp,
-                                    textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .weight(2f)
-                                    .height(30.dp)
-                                    .background(Color.Red)
-                                    .padding(horizontal = 10.dp)
-                            ){
-                                Text(
-                                    text = "EN OFERTA",
-                                    fontFamily = FontFamily(Font(R.font.muli)),
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.size(12.dp))
-                    DiscountedLazyRow()
-                }
+
                 item {
                     Box(modifier = Modifier
                         .fillMaxWidth()
@@ -264,6 +230,50 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                     }
                     Spacer(modifier = Modifier.size(12.dp))
                     NewsLazyRow()
+
+                }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(30.dp)
+                    ) {
+                        Row (Modifier.fillMaxSize()) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(30.dp)
+                                    .padding(horizontal = 10.dp)
+                            ){
+                                Text(
+                                    text = "/ / / / / / / / / / / / / / / / / / /",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.Gray,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(2f)
+                                    .height(30.dp)
+                                    .background(Color.Red)
+                                    .padding(horizontal = 10.dp)
+                            ){
+                                Text(
+                                    text = "EN OFERTA",
+                                    fontFamily = FontFamily(Font(R.font.muli)),
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.size(12.dp))
+                    DiscountedLazyRow()
                     Spacer(modifier = Modifier.size(70.dp))
                 }
             }
@@ -297,7 +307,7 @@ fun DiscountedLazyRow() {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredDiscountedProducts.size) { index ->
-            DiscountedProductCard(filteredDiscountedProducts[index])
+            ProductCard(filteredDiscountedProducts[index])
         }
     }
 }

@@ -102,7 +102,7 @@ fun ProductCard(product: Product) {
     Card(
         modifier = Modifier
             .padding(12.dp)
-            .width(250.dp),
+            .width(200.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
@@ -110,7 +110,7 @@ fun ProductCard(product: Product) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp),
+                    .height(120.dp),
             ) {
                 Image(
                     modifier = Modifier
@@ -123,7 +123,7 @@ fun ProductCard(product: Product) {
             }
             Row(
                 modifier = Modifier
-                    .padding(12.dp)
+                    .padding(10.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -133,10 +133,10 @@ fun ProductCard(product: Product) {
                         text = product.getTitle(),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                        fontSize = 16.sp
                     )
                     Text(
-                        text = "Descripcion",
+                        text = product.getDescription(),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontSize = 12.sp
                     )
@@ -181,8 +181,8 @@ fun ProductCard(product: Product) {
                 }
                 Button(
                     modifier = Modifier
-                        .height(40.dp)
-                        .width(120.dp)
+                        .height(50.dp)
+                        .width(130.dp)
                         .padding(8.dp),
                     onClick = { /* Acción del botón */ },
                     colors = ButtonDefaults.buttonColors(
@@ -195,116 +195,12 @@ fun ProductCard(product: Product) {
                         "Añadir a la cesta",
                         color = Color.White,
                         textAlign = TextAlign.Center,
-                        fontFamily = FontFamily(Font(R.font.muli)),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DiscountedProductCard(product: Product) {
-
-    Card(
-        modifier = Modifier
-            .padding(12.dp)
-            .width(200.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-    ) {
-        Column(Modifier.background(Color.White)) {
-            // Imagen en la parte superior
-            Image(
-                painter = painterResource(id = product.getImage()), // Reemplaza con tu imagen
-                contentDescription = "Imagen del producto",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp) // Altura de la imagen
-            )
-
-            // Fila para el título y el precio
-            Row(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = product.getTitle(),
-                        fontFamily = FontFamily(Font(R.font.muli)),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "Descripcion",
-                        fontFamily = FontFamily(Font(R.font.muli)),
-                        fontSize = 11.sp
-                    )
-                }
-                Column {
-                    Text(
-                        text = (product.getPrice()/100*product.getDiscount()).toString() + "€/kg",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
-                    Text(
-                        text = product.getPrice().toString() + "€/kg",
-                        fontFamily = FontFamily(Font(R.font.muli)),
-                        fontWeight = FontWeight.Bold,
-                        textDecoration = TextDecoration.LineThrough,
-                        fontSize = 9.sp
-                    )
                 }
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .background(Color.Red)
-                ) {
-                    Text(
-                        text = " -" + product.getDiscount().toString()+ "% ",
-                        fontFamily = FontFamily(Font(R.font.muli)),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        color = Color.White
-                    )
-                }
-                Button(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .width(120.dp)
-                        .padding(8.dp),
-                    onClick = { /* Acción del botón */ },
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = Color(0xffb5e354)
-                    ),
-                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)
-                ) {
-                    Text(
-                        "Añadir a la cesta",
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        fontFamily = FontFamily(Font(R.font.muli)),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp
-                    )
-                }
-            }
-
         }
     }
 }
@@ -319,7 +215,7 @@ fun NewProductCard(product: Product) {
     Card(
         modifier = Modifier
             .padding(12.dp)
-            .width(280.dp),
+            .width(260.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
@@ -342,11 +238,11 @@ fun NewProductCard(product: Product) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(320.dp)
+                    .height(280.dp)
             )
             Row(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(10.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -361,7 +257,7 @@ fun NewProductCard(product: Product) {
                     Text(
                         text = product.getDescription(),
                         fontFamily = FontFamily(Font(R.font.muli)),
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                 }
                 Column {
@@ -388,8 +284,8 @@ fun NewProductCard(product: Product) {
             ) {
                 Button(
                     modifier = Modifier
-                        .height(40.dp)
-                        .width(120.dp)
+                        .height(50.dp)
+                        .width(130.dp)
                         .padding(8.dp),
                     onClick = { /* Acción del botón */ },
                     colors = ButtonDefaults.buttonColors(
@@ -404,7 +300,7 @@ fun NewProductCard(product: Product) {
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                 }
             }
