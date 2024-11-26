@@ -20,14 +20,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -37,43 +42,32 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
-@Preview
 @Composable
-fun ProductScreen() {
+fun ProductScreen(navController: NavController, viewModel: MyViewModel, product: Product) {
     Scaffold(
         topBar = {
-            ProductHeader()
+            ProductHeader(product, navController)
         }, content = { innerPadding ->
-            ProductScreenContent(innerPadding)
+            ProductScreenContent(innerPadding, product, navController)
         }
     )
 }
 
 @Composable
-fun ProductScreenContent(innerPadding: PaddingValues) {
+fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navController: NavController) {
     LazyColumn (
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(innerPadding) // Usar innerPadding para respetar el espaciado
+            .padding(innerPadding)
     ) {
         item {
-            Image(
-                painter = painterResource(id = R.drawable.queso),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp)
-            )
-        }
-        item {
             Text(
-                text = "TITULO",
+                text = product.getTitle(),
                 fontFamily = FontFamily(Font(R.font.muli)),
                 fontSize = 26.sp,
                 textAlign = TextAlign.Center,
@@ -84,37 +78,35 @@ fun ProductScreenContent(innerPadding: PaddingValues) {
         }
         item {
             Text(
-                text = "Descripcion",
+                text = product.getDescription(),
                 fontFamily = FontFamily(Font(R.font.muli)),
                 color = Color.Gray,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .padding(start = 16.dp, top = 8.dp, end = 16.dp)
+                    .padding(start = 16.dp, end = 16.dp)
             )
         }
         item {
-            Text(
-                text = "12.02€/kg",
-                fontFamily = FontFamily(Font(R.font.muli)),
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 18.dp, end = 16.dp)
-            )
-        }
-        item {
-            Text(
-                text = "12.02€/kg",
-                color = Color.Black,
-                fontFamily = FontFamily(Font(R.font.muli)),
-                fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.LineThrough,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 26.dp)
-            )
+            Row (modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = (if (product.getIsDiscounted()) product.getDiscountedPrice().toString() + " €" else { product.getPrice().toString() + "€" }),
+                    fontFamily = FontFamily(Font(R.font.muli)),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                )
+                Text(
+                    text = product.getPrice().toString() + " €",
+                    color = if (product.getIsDiscounted()) Color.Gray else Color.White,
+                    fontFamily = FontFamily(Font(R.font.muli)),
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.LineThrough,
+                    fontSize = 20.sp
+                )
+            }
         }
         item {
             Button(
@@ -134,12 +126,12 @@ fun ProductScreenContent(innerPadding: PaddingValues) {
                     textAlign = TextAlign.Center,
                     fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 18.sp
                 )
             }
         }
         item {
-            Spacer(modifier = Modifier.size(30.dp))
+            Spacer(modifier = Modifier.size(20.dp))
         }
         item {
             Box(
@@ -154,9 +146,9 @@ fun ProductScreenContent(innerPadding: PaddingValues) {
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
                     )
-                    RelatedLazyRow()
+                    RelatedLazyRow(navController)
                 }
             }
         }
@@ -164,7 +156,7 @@ fun ProductScreenContent(innerPadding: PaddingValues) {
 }
 
 @Composable
-fun RelatedLazyRow() {
+fun RelatedLazyRow(navController: NavController) {
 
     val filteredTrendingProducts = remember {
         productsInStorage.filter { it.getFeatured() }
@@ -174,40 +166,51 @@ fun RelatedLazyRow() {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredTrendingProducts.size) { index ->
-            ProductCard(filteredTrendingProducts[index])
+            ProductCard(filteredTrendingProducts[index], navController)
         }
     }
 }
 
-@Preview
 @Composable
-fun ProductHeader() {
+fun ProductHeader(product: Product, navController: NavController) {
+    var isFavorite: Boolean by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
-            .padding(8.dp)
     ) {
+        Image(
+            painter = painterResource(id = product.getImage()),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+        )
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween // Distribuye los elementos con espacio entre ellos
         ) {
             Icon(
                 modifier = Modifier
                     .size(30.dp)
-                    .clickable { },
+                    .clickable {
+                        navController.popBackStack()
+                        navController.navigate("mainScreen") },
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = Color(0xffb5e354)
+                tint = Color.Black
             )
-            Icon(
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { },
-                imageVector = Icons.Default.FavoriteBorder,
-                contentDescription = "Favorite",
-                tint = Color(0xffb5e354)
-            )
+            IconButton(onClick = {
+                isFavorite = !isFavorite
+            }) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                    tint = if (isFavorite) Color.Red else Color.Gray
+                )
+            }
+
         }
     }
 }

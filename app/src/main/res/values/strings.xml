@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">LaDespensa24</string>
+    <string name="HomeScreenES">INICIO</string>
+    <string name="HomeScreenEN">HOME</string>
+    <string name="TrendingFlagES">EN TENDENCIA AHORA</string>
+    <string name="TrendingFlagEN">TRENDING NOW</string>
+    <string name="NewsFlagES">NOVEDADES</string>
+    <string name="NewsFlagEN">NEWS</string>
+    <string name="DiscountedFlagES">EN OFERTA</string>
+    <string name="DiscountedFlagEN">ON SALES</string>
+    <string name="SearchBarPlaceholderES">Buscar Producto</string>
+    <string name="SearchBarPlaceholderEN">Search Product</string>
 </resources>

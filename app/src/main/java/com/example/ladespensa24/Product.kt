@@ -33,27 +33,31 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 val productsInStorage = listOf(
-    Product("Queso", "500g aprox",12.02, "Charcuteria", R.drawable.queso, true, false, 0, true),
-    Product("Pan", "1 barra de pan",12.02, "Panaderia", R.drawable.pan, true, true, 50, false),
-    Product("Carne", "1k aprox",12.02, "Carniceria", R.drawable.carne, true, true, 40, false),
-    Product("Manzana", "180g ",12.02, "Verdura", R.drawable.manzana, true, false, 0, true),
-    Product("lechuga", "200g",12.02, "Verdura", R.drawable.lechuga, true, true, 60, false)
+    Product("Queso", "500g aprox",12.02, ProductCategories.Charcuteria, R.drawable.queso, true, false, 0, true),
+    Product("Pan", "1 barra de pan",12.02, ProductCategories.Panaderia, R.drawable.pan, true, true, 50, false),
+    Product("Carne", "1k aprox",12.02, ProductCategories.Carne, R.drawable.carne, true, true, 40, false),
+    Product("Manzana", "180g ",12.02, ProductCategories.Fruta, R.drawable.manzana, true, false, 0, true),
+    Product("lechuga", "200g",12.02, ProductCategories.Verdura, R.drawable.lechuga, true, true, 60, false)
 )
+
+enum class ProductCategories {
+    Bebidas, Pastas, Dulces, Fruta, Verdura, Carne, Panaderia, Cafe, Charcuteria
+}
 
 open class Product(
     private var title: String,
     private var description: String,
     private var price: Double,
-    private var category: String,
+    private var category: ProductCategories,
     private var image: Int,
     private var isFeatured: Boolean,
     private var isDiscounted: Boolean,
     private var discount: Int,
     private var isNew: Boolean,
 ) {
-
 
     fun getTitle(): String {
         return title
@@ -64,7 +68,7 @@ open class Product(
     }
 
     fun getCategory(): String {
-        return category
+        return category.toString()
     }
 
     fun getImage(): Int {
@@ -90,20 +94,23 @@ open class Product(
     fun getDescription(): String {
         return description
     }
+
+    fun getDiscountedPrice(): Double {
+        return (getPrice() - (getPrice()/100*getDiscount()))
+    }
 }
 
 @Composable
-fun ProductCard(product: Product) {
-    var isProductDiscounted = product.getIsDiscounted()
-    if (!product.getIsDiscounted()) {
-        isProductDiscounted = false
-    }
+fun ProductCard(product: Product, navController: NavController) {
 
     Card(
         modifier = Modifier
             .padding(12.dp)
             .width(200.dp),
         shape = RoundedCornerShape(16.dp),
+        onClick = { navController.navigate("productScreen/${product.getTitle()}") {
+            launchSingleTop = true
+        } },
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Column(Modifier.background(Color.White)) {
@@ -143,14 +150,14 @@ fun ProductCard(product: Product) {
                 }
                 Column {
                     Text(
-                        text = (if (isProductDiscounted) (product.getPrice()/100*product.getDiscount()).toString() + "€/kg" else { product.getPrice().toString() + "€/kg" }),
+                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice().toString() + "€" else { product.getPrice().toString() + " €" }),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
                     Text(
-                        color = if (isProductDiscounted) Color.Black else Color.White,
-                        text = product.getPrice().toString() + "€/kg",
+                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
+                        text = product.getPrice().toString() + " €",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.LineThrough,
@@ -158,8 +165,6 @@ fun ProductCard(product: Product) {
                     )
                 }
             }
-
-            // Botón "Añadir a la cesta"
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -169,7 +174,7 @@ fun ProductCard(product: Product) {
                 Box(
                     modifier = Modifier
                         .padding(10.dp)
-                        .background(if (isProductDiscounted) Color.Red else Color.White)
+                        .background(if (product.getIsDiscounted()) Color.Red else Color.White)
                 ) {
                     Text(
                         text = " -" + product.getDiscount().toString()+ "% ",
@@ -197,7 +202,7 @@ fun ProductCard(product: Product) {
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
+                        fontSize = 10.sp
                     )
                 }
             }
@@ -206,16 +211,15 @@ fun ProductCard(product: Product) {
 }
 
 @Composable
-fun NewProductCard(product: Product) {
-    var isProductDiscounted = product.getIsDiscounted()
-    if (!product.getIsDiscounted()) {
-        isProductDiscounted = false
-    }
+fun NewProductCard(product: Product, navController: NavController) {
 
     Card(
         modifier = Modifier
             .padding(12.dp)
             .width(260.dp),
+        onClick = { navController.navigate("productScreen/${product.getTitle()}") {
+            launchSingleTop = true
+        } },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
@@ -262,14 +266,14 @@ fun NewProductCard(product: Product) {
                 }
                 Column {
                     Text(
-                        text = (if (isProductDiscounted) (product.getPrice()/100*product.getDiscount()).toString() + "€/kg" else { product.getPrice().toString() + "€/kg" }),
+                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice().toString() + "€" else { product.getPrice().toString() + " €" }),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
                     Text(
-                        color = if (isProductDiscounted) Color.Black else Color.White,
-                        text = product.getPrice().toString() + "€/kg",
+                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
+                        text = product.getPrice().toString() + " €",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.LineThrough,
@@ -300,7 +304,7 @@ fun NewProductCard(product: Product) {
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
+                        fontSize = 10.sp
                     )
                 }
             }

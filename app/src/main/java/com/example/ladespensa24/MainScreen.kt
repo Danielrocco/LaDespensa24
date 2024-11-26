@@ -17,10 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +34,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,23 +42,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
-@Preview
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavController, viewModel: MyViewModel) {
     Scaffold(
         topBar = {
             AppHeader()
         }, content = { innerPadding ->
-            MainScreenContent(innerPadding)
+            MainScreenContent(innerPadding, navController)
         }, bottomBar = {
-            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth())
+            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth(), navController, viewModel)
         }
     )
 }
 
 @Composable
-fun AppFooter(modifier: Modifier) {
+fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyViewModel) {
+
+    val selectedIcon = viewModel.selectedIcon.value
+
     Card(
         modifier = modifier,
         shape = RectangleShape,
@@ -77,17 +79,22 @@ fun AppFooter(modifier: Modifier) {
                 Modifier
                     .height(30.dp)
                     .weight(1f)
-                    .clickable { },
+                    .clickable { navController.popBackStack()
+                        navController.navigate("mainScreen")
+                        viewModel.selectIcon("mainScreen")
+                               },
                 R.drawable.casa,
-                Color.White
+                if (selectedIcon == "mainScreen") Color.White else Color.Gray
             )
             NormalImage(
                 Modifier
                     .height(28.dp)
                     .weight(1f)
-                    .clickable { },
+                    .clickable { navController.popBackStack()
+                        navController.navigate("categoriesScreen")
+                        viewModel.selectIcon("categoriesScreen")},
                 R.drawable.cuadrados,
-                Color.White
+                if (selectedIcon == "categoriesScreen") Color.White else Color.Gray
             )
             NormalImage(
                 Modifier
@@ -95,7 +102,7 @@ fun AppFooter(modifier: Modifier) {
                     .weight(1f)
                     .clickable { },
                 R.drawable.corazon,
-                Color.White
+                Color.Gray
             )
             NormalImage(
                 Modifier
@@ -103,14 +110,14 @@ fun AppFooter(modifier: Modifier) {
                     .weight(1f)
                     .clickable { },
                 R.drawable.persona,
-                Color.White
+                Color.Gray
             )
         }
     }
 }
 
 @Composable
-fun MainScreenContent(paddingValues: PaddingValues) {
+fun MainScreenContent(paddingValues: PaddingValues, navController: NavController) {
     Column {
         Box(
             Modifier
@@ -130,7 +137,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                             modifier = Modifier.fillMaxSize()
                         )
                         Text(
-                            text = "INICIO",
+                            text = stringResource(id = R.string.HomeScreenES),
                             fontFamily = FontFamily(Font(R.font.muli)),
                             color = Color.White,
                             fontSize = 28.sp,
@@ -157,7 +164,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                                     .padding(horizontal = 10.dp)
                             ){
                                 Text(
-                                    text = "EN TENDENCIA AHORA",
+                                    text = stringResource(id = R.string.TrendingFlagES),
                                     fontFamily = FontFamily(Font(R.font.muli)),
                                     color = Color.White,
                                     fontSize = 18.sp,
@@ -185,7 +192,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
 
                     }
                     Spacer(modifier = Modifier.size(10.dp))
-                    FeaturedLazyRow()
+                    FeaturedLazyRow(navController)
                 }
 
                 item {
@@ -207,7 +214,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                             )
                             Box(Modifier.weight(1.5f).fillMaxHeight().background(Color(0xff6fd5e9))) {
                                 Text(
-                                    text = "NOVEDADES",
+                                    text = stringResource(id = R.string.NewsFlagES),
                                     fontFamily = FontFamily(Font(R.font.muli)),
                                     color = Color.White,
                                     fontSize = 22.sp,
@@ -229,7 +236,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
 
                     }
                     Spacer(modifier = Modifier.size(12.dp))
-                    NewsLazyRow()
+                    NewsLazyRow(navController)
 
                 }
                 item {
@@ -262,7 +269,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                                     .padding(horizontal = 10.dp)
                             ){
                                 Text(
-                                    text = "EN OFERTA",
+                                    text = stringResource(id = R.string.DiscountedFlagES),
                                     fontFamily = FontFamily(Font(R.font.muli)),
                                     color = Color.White,
                                     fontSize = 18.sp,
@@ -273,7 +280,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
                         }
                     }
                     Spacer(modifier = Modifier.size(12.dp))
-                    DiscountedLazyRow()
+                    DiscountedLazyRow(navController)
                     Spacer(modifier = Modifier.size(70.dp))
                 }
             }
@@ -283,7 +290,7 @@ fun MainScreenContent(paddingValues: PaddingValues) {
 }
 
 @Composable
-fun NewsLazyRow() {
+fun NewsLazyRow(navController: NavController) {
     val filteredNewProducts = remember {
         productsInStorage.filter { it.getIsNew() }
     }
@@ -292,13 +299,13 @@ fun NewsLazyRow() {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredNewProducts.size) { index ->
-            NewProductCard(filteredNewProducts[index])
+            NewProductCard(filteredNewProducts[index], navController)
         }
     }
 }
 
 @Composable
-fun DiscountedLazyRow() {
+fun DiscountedLazyRow(navController: NavController) {
     val filteredDiscountedProducts = remember {
         productsInStorage.filter { it.getIsDiscounted() }
     }
@@ -307,13 +314,13 @@ fun DiscountedLazyRow() {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredDiscountedProducts.size) { index ->
-            ProductCard(filteredDiscountedProducts[index])
+            ProductCard(filteredDiscountedProducts[index], navController)
         }
     }
 }
 
 @Composable
-fun FeaturedLazyRow() {
+fun FeaturedLazyRow(navController: NavController) {
 
     val filteredTrendingProducts = remember {
         productsInStorage.filter { it.getFeatured() }
@@ -323,7 +330,7 @@ fun FeaturedLazyRow() {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredTrendingProducts.size) { index ->
-            ProductCard(filteredTrendingProducts[index])
+            ProductCard(filteredTrendingProducts[index], navController)
         }
     }
 }
@@ -352,7 +359,7 @@ fun SearchBarButton() {
             )
             Spacer(modifier = Modifier.size(18.dp))
             Text(
-                text = "Buscar producto",
+                text = stringResource(id = R.string.SearchBarPlaceholderES),
                 color = Color.Gray,
                 fontFamily = FontFamily(Font(R.font.muli)),
                 fontWeight = FontWeight.Bold,
