@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -34,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -44,14 +46,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 
 @Composable
 fun ProductScreen(navController: NavController, viewModel: MyViewModel, product: Product) {
     Scaffold(
         topBar = {
-            ProductHeader(product, navController)
-        }, content = { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp, // Aumenta la elevación para una sombra más visible
+                        shape = RoundedCornerShape(0.dp), // Mantiene los bordes rectos
+                        ambientColor = Color.Black.copy(alpha = 1.2f), // Color negro con más opacidad
+                        spotColor = Color.Black.copy(alpha = 1.2f) // Ajusta el color de la sombra proyectada
+                    )
+            ) {
+                ProductHeader(product, navController)
+            }
+        },
+        content = { innerPadding ->
             ProductScreenContent(innerPadding, product, navController)
         }
     )
@@ -65,6 +80,16 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
             .background(Color.White)
             .padding(innerPadding)
     ) {
+        item {
+            Image(
+                painter = painterResource(id = product.getImage()),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+            )
+        }
         item {
             Text(
                 text = product.getTitle(),
@@ -178,18 +203,12 @@ fun ProductHeader(product: Product, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .background(color = Color(0xFF855C41))
+            .zIndex(1f)
     ) {
-        Image(
-            painter = painterResource(id = product.getImage()),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp)
-        )
         Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween // Distribuye los elementos con espacio entre ellos
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Icon(
                 modifier = Modifier
@@ -199,18 +218,22 @@ fun ProductHeader(product: Product, navController: NavController) {
                         navController.navigate("mainScreen") },
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = Color.Black
+                tint = Color.White
             )
-            IconButton(onClick = {
-                isFavorite = !isFavorite
-            }) {
+            IconButton(
+                modifier = Modifier
+                    .size(30.dp),
+                onClick = {
+                    isFavorite = !isFavorite
+                }
+            ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
-                    tint = if (isFavorite) Color.Red else Color.Gray
+                    tint = if (isFavorite) Color.Red else Color.White
                 )
             }
-
         }
     }
 }
+

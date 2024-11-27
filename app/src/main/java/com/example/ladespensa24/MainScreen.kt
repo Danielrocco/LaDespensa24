@@ -84,7 +84,7 @@ fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyVie
                         viewModel.selectIcon("mainScreen")
                                },
                 R.drawable.casa,
-                if (selectedIcon == "mainScreen") Color.White else Color.Gray
+                if (selectedIcon == "mainScreen") Color.White else Color(0xFFD2D2D2)
             )
             NormalImage(
                 Modifier
@@ -94,7 +94,7 @@ fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyVie
                         navController.navigate("categoriesScreen")
                         viewModel.selectIcon("categoriesScreen")},
                 R.drawable.cuadrados,
-                if (selectedIcon == "categoriesScreen") Color.White else Color.Gray
+                if (selectedIcon == "categoriesScreen") Color.White else Color(0xFFD2D2D2)
             )
             NormalImage(
                 Modifier
@@ -102,15 +102,17 @@ fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyVie
                     .weight(1f)
                     .clickable { },
                 R.drawable.corazon,
-                Color.Gray
+                Color(0xFFD2D2D2)
             )
             NormalImage(
                 Modifier
                     .height(30.dp)
                     .weight(1f)
-                    .clickable { },
+                    .clickable { navController.popBackStack()
+                        navController.navigate("userScreen")
+                        viewModel.selectIcon("userScreen") },
                 R.drawable.persona,
-                Color.Gray
+                if (selectedIcon == "userScreen") Color.White else Color(0xFFD2D2D2)
             )
         }
     }
