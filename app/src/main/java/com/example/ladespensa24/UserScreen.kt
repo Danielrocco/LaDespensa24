@@ -1,6 +1,9 @@
 package com.example.ladespensa24
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.ExitToApp
@@ -13,7 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -22,7 +30,7 @@ import androidx.navigation.NavController
 fun UserScreen(navController: NavController, viewModel: MyViewModel) {
     Scaffold(
         content = { innerPadding ->
-            ProfileContent(innerPadding)
+            ProfileContent(innerPadding, navController)
         },
         bottomBar = {
             AppFooter(Modifier.navigationBarsPadding().fillMaxWidth(), navController, viewModel)
@@ -31,65 +39,76 @@ fun UserScreen(navController: NavController, viewModel: MyViewModel) {
 }
 
 @Composable
-fun ProfileContent(innerPadding: PaddingValues) {
-    Column(
+fun ProfileContent(innerPadding: PaddingValues, navController: NavController) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top
+            .background(Color.White)
+            .padding(16.dp)
     ) {
-        // Header
-        Text(
-            text = "Daniel",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "Entrega en 46026",
-            color = Color(0xFF4CAF50),
-            fontSize = 14.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Menu items
-        ProfileOption(img = Icons.Default.Person, text = "Datos personales")
-        ProfileOption(img = Icons.Default.LocationOn, text = "Direcciones")
-        ProfileOption(img = Icons.Default.List, text = "Mis pedidos")
-        ProfileOption(img = Icons.Default.Build, text = "Idioma")
-        Spacer(modifier = Modifier.weight(1f)) // Espaciador para empujar el botón hacia abajo
-
-        // Logout option
-        ProfileOption(
-            img = Icons.Default.ExitToApp,
-            text = "Cerrar sesión",
-            textColor = Color.Red
-        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween // Distribuye los elementos entre el inicio y el final
+        ) {
+            Column {
+                HeaderProfileContent()
+                Spacer(Modifier.size(22.dp))
+                OptionCard("Datos Personales", navController, Color(0xffb5e354), Color.White, )
+                Spacer(Modifier.size(22.dp))
+                OptionCard("Metodos de pago", navController, Color(0xffb5e354), Color.White, )
+                Spacer(Modifier.size(22.dp))
+                OptionCard("Dirección", navController, Color(0xffb5e354), Color.White, )
+                Spacer(Modifier.size(22.dp))
+                OptionCard("Mis Pedidos", navController, Color(0xffb5e354), Color.White, )
+            }
+            Column {
+                OptionCard("Cerrar Sesión", navController, Color(0xFFFF6A6A), Color.White,)
+                Spacer(Modifier.size(46.dp)) // Espacio debajo del último elemento
+            }
+        }
     }
 }
 
 @Composable
-fun ProfileOption(
-    img: ImageVector,
-    text: String,
-    textColor: Color = Color.Black
-) {
+fun HeaderProfileContent() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .background(Color.White),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = img,
-            contentDescription = null,
-            tint = Color.Gray,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = text,
-            color = textColor,
-            fontSize = 16.sp
+            text = "Hola Daniel",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
         )
+        Box(
+            modifier = Modifier.align(Alignment.CenterVertically)
+        ) {
+            Text(
+                text = "Entrega en 46026",
+                color = Color(0xffb5e354),
+                fontSize = 14.sp,
+            )
+        }
+    }
+}
+
+@Composable
+fun OptionCard(titulo: String, navController: NavController, backgroundColor: Color, textColor: Color) {
+    Card(modifier = Modifier.fillMaxWidth().height(50.dp),
+        shape = RoundedCornerShape(16.dp),) {
+        Box(modifier = Modifier.fillMaxSize().background(color = backgroundColor)) {
+            Text(
+                text = titulo,
+                fontFamily = FontFamily(Font(R.font.muli)),
+                color = textColor,
+                fontSize = 20.sp,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(4.dp).padding(start = 20.dp),
+            )
+        }
     }
 }
