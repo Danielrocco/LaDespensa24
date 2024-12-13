@@ -211,6 +211,79 @@ fun ProductCard(product: Product, navController: NavController) {
 }
 
 @Composable
+fun FavouriteProductCard(
+    product: Product,
+    navController: NavController,
+    modifier: Modifier // Agrega este parámetro
+) {
+    Card(
+        modifier = modifier
+            .padding(12.dp), // Se aplica el modificador aquí
+        shape = RoundedCornerShape(16.dp),
+        onClick = {
+            navController.navigate("productScreen/${product.getTitle()}") {
+                launchSingleTop = true
+            }
+        },
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+    ) {
+        Column(Modifier.background(Color.White)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+            ) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    painter = painterResource(product.getImage()),
+                    contentDescription = "Imagen del producto",
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = product.getTitle(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = product.getDescription(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontSize = 12.sp
+                    )
+                }
+                Column {
+                    Text(
+                        text = if (product.getIsDiscounted()) "${product.getDiscountedPrice()}€" else "${product.getPrice()}€",
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
+                        text = "${product.getPrice()} €",
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.LineThrough,
+                        fontSize = 9.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun NewProductCard(product: Product, navController: NavController) {
 
     Card(

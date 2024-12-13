@@ -19,10 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,25 +63,25 @@ fun MainScreen(navController: NavController, viewModel: MyViewModel) {
 
 @Composable
 fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyViewModel) {
-
     val selectedIcon = viewModel.selectedIcon.value
 
     Card(
         modifier = modifier,
-        shape = RectangleShape,
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 40.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF855C41)) // Color de fondo dentro de la Card
+                .height(44.dp)
+                .background(Color(0xFF7A7A7A)) // Color de fondo dentro de la Card
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             NormalImage(
                 Modifier
-                    .height(30.dp)
+                    .height(24.dp)
                     .weight(1f)
                     .clickable { navController.popBackStack()
                         navController.navigate("mainScreen")
@@ -86,27 +90,30 @@ fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyVie
                 R.drawable.casa,
                 if (selectedIcon == "mainScreen") Color.White else Color(0xFFD2D2D2)
             )
-            NormalImage(
-                Modifier
-                    .height(28.dp)
+            Icon(
+                imageVector = Icons.Default.Menu,
+                contentDescription = null,
+                tint = if (selectedIcon == "categoriesScreen") Color.White else Color(0xFFD2D2D2),
+                modifier = Modifier
+                    .height(34.dp)
                     .weight(1f)
                     .clickable { navController.popBackStack()
                         navController.navigate("categoriesScreen")
                         viewModel.selectIcon("categoriesScreen")},
-                R.drawable.cuadrados,
-                if (selectedIcon == "categoriesScreen") Color.White else Color(0xFFD2D2D2)
             )
             NormalImage(
                 Modifier
-                    .height(28.dp)
+                    .height(24.dp)
                     .weight(1f)
-                    .clickable { },
+                    .clickable { navController.popBackStack()
+                        navController.navigate("favouriteScreen")
+                        viewModel.selectIcon("favouriteScreen")},
                 R.drawable.corazon,
-                Color(0xFFD2D2D2)
+                if (selectedIcon == "favouriteScreen") Color.White else Color(0xFFD2D2D2)
             )
             NormalImage(
                 Modifier
-                    .height(30.dp)
+                    .height(24.dp)
                     .weight(1f)
                     .clickable { navController.popBackStack()
                         navController.navigate("userScreen")
