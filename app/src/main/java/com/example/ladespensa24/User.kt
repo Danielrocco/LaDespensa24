@@ -6,7 +6,7 @@ open class User(
     private var address: String,
     private var payCard: Int,
     private var favouriteProducts: List<Product>?,
-    private var boughtProduct: List<Product>?
+    private var boughtProducts: List<Product>?
 
     ) {
 

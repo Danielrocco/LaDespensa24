@@ -40,7 +40,7 @@ fun MyApp() {
     val navController = rememberNavController()
     val viewModel: MyViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "FavouriteScreen" + "") {
+    NavHost(navController = navController, startDestination = "MainScreen" + "") {
         composable("mainScreen") { MainScreen(navController, viewModel) }
         composable("userScreen") { UserScreen(navController, viewModel) }
         composable("favouriteScreen") { FavouriteScreen(navController, viewModel) }
