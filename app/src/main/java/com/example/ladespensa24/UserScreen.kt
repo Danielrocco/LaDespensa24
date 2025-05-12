@@ -57,17 +57,13 @@ fun ProfileContent(innerPadding: PaddingValues, navController: NavController) {
             Column() {
                 HeaderProfileContent()
                 Spacer(Modifier.size(18.dp))
-                OptionCard("Datos Personales", navController, Color(0xFFDEDEDE), Color.Black, "", Icons.Default.Person)
-                Spacer(Modifier.size(18.dp))
-                OptionCard("Metodos de pago", navController, Color(0xFFDEDEDE), Color.Black, "", Icons.Default.Menu)
-                Spacer(Modifier.size(18.dp))
-                OptionCard("Dirección", navController, Color(0xFFDEDEDE), Color.Black, "", Icons.Default.LocationOn)
+                OptionCard("Datos Usuario", navController, Color(0xFFDEDEDE), Color.Black, "userInfoScreen", Icons.Default.Person)
                 Spacer(Modifier.size(18.dp))
                 OptionCard("Mis Pedidos", navController, Color(0xFFDEDEDE), Color.Black, "", Icons.Default.ShoppingCart)
             }
             Column {
                 LogOut("Cerrar Sesión", navController, Color(0xFFFF6A6A), Color.White)
-                Spacer(Modifier.size(50.dp)) // Espacio debajo del último elemento
+                Spacer(Modifier.size(70.dp)) // Espacio debajo del último elemento
             }
         }
     }
@@ -128,6 +124,7 @@ fun OptionCard(
 ) {
     Card(modifier = Modifier
         .fillMaxWidth()
+        .padding(start = 12.dp, end = 12.dp)
         .height(45.dp),
         onClick = {
             navController.navigate(route) {

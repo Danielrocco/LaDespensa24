@@ -40,11 +40,13 @@ fun MyApp() {
     val navController = rememberNavController()
     val viewModel: MyViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "MainScreen" + "") {
+    NavHost(navController = navController, startDestination = "loginScreen" + "") {
         composable("mainScreen") { MainScreen(navController, viewModel) }
         composable("userScreen") { UserScreen(navController, viewModel) }
+        composable("loginScreen") { LoginScreen(navController, viewModel) }
         composable("favouriteScreen") { FavouriteScreen(navController, viewModel) }
         composable("categoriesScreen") { CategoriesScreen(navController, viewModel) }
+        composable("userInfoScreen") { UserInfoScreen(navController, viewModel) }
         composable(
             "productScreen/{productName}",
             arguments = listOf(navArgument("productName") { type = NavType.StringType })
@@ -57,6 +59,7 @@ fun MyApp() {
         }
     }
 }
+
 
 private fun getProductByName(productName: String): Product? {
     return productsInStorage.find { it.getTitle() == productName }

@@ -26,25 +26,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import java.util.Date
 
 val productsInStorage = listOf(
-    Product("Queso", "500g aprox",12.02, ProductCategories.Charcuteria, R.drawable.queso, true, false, 0, true),
-    Product("Pan", "1 barra de pan",12.02, ProductCategories.Panaderia, R.drawable.pan, true, true, 50, false),
-    Product("Carne", "1k aprox",12.02, ProductCategories.Carne, R.drawable.carne, true, true, 40, false),
+    Product("Pan", "1 barra de pan",12.02, ProductCategories.Horno, R.drawable.pan, true, true, 50, false),
     Product("Manzana", "180g ",12.02, ProductCategories.Fruta, R.drawable.manzana, true, false, 0, true),
     Product("lechuga", "200g",12.02, ProductCategories.Verdura, R.drawable.lechuga, true, true, 60, false)
 )
 
 enum class ProductCategories {
-    Bebidas, Pastas, Dulces, Fruta, Verdura, Carne, Panaderia, Cafe, Charcuteria
+    Fruta, Verdura, Horno
 }
 
 open class Product(
@@ -67,8 +64,8 @@ open class Product(
         return price
     }
 
-    fun getCategory(): String {
-        return category.toString()
+    fun getCategory(): ProductCategories {
+        return category
     }
 
     fun getImage(): Int {
@@ -97,6 +94,49 @@ open class Product(
 
     fun getDiscountedPrice(): Double {
         return (getPrice() - (getPrice()/100*getDiscount()))
+    }
+}
+
+open class InCartProduct(
+    title: String,
+    description: String,
+    price: Double,
+    category: ProductCategories,
+    image: Int,
+    isFeatured: Boolean,
+    isDiscounted: Boolean,
+    discount: Int,
+    isNew: Boolean,
+    private var totalPrice: Double,
+    private var units: Int
+) :
+    Product(title, description, price, category, image, isFeatured, isDiscounted, discount, isNew) {
+
+    fun getTotalPrice(): Double {
+        return totalPrice
+    }
+
+    fun getUnits(): Int {
+        return units
+    }
+
+    fun addUnits() {
+        totalPrice += getPrice()
+        units++
+    }
+
+    fun removeUnits() {
+        totalPrice -= getPrice()
+        units--
+    }
+}
+
+class Purchase(
+    private var boughtProducts: List<InCartProduct>,
+    private var purchaseDate: Date
+) {
+    fun getPurchaseDate(): Date {
+        return purchaseDate
     }
 }
 

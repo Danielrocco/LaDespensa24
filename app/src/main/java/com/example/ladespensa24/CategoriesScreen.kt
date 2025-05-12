@@ -69,25 +69,7 @@ fun CategoriesScreenContent(innerPadding: PaddingValues, navController: NavContr
                     CategoryCard("Verdura",1, navController)
                 }
                 item {
-                    CategoryCard("Bebidas",1, navController)
-                }
-                item {
-                    CategoryCard("Carne",1, navController)
-                }
-                item {
-                    CategoryCard("Pastas",1, navController)
-                }
-                item {
-                    CategoryCard("Dulces",1, navController)
-                }
-                item {
-                    CategoryCard("Panadería",1, navController)
-                }
-                item {
-                    CategoryCard("Charcutería",1, navController)
-                }
-                item {
-                    CategoryCard("Fruta",1, navController)
+                    CategoryCard("Horno",1, navController)
                 }
             }
         }
