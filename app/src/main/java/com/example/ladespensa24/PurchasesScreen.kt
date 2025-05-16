@@ -1,6 +1,5 @@
 package com.example.ladespensa24
 
-import android.widget.Space
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +16,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -31,9 +35,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlin.collections.chunked
+
 
 @Composable
-fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
+fun PurchasesScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
@@ -48,7 +54,7 @@ fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
 
     Scaffold(
         content = { innerPadding ->
-            FavouriteContent(innerPadding, navController, user)
+            PurchasesContent(innerPadding, navController, user)
         },
         bottomBar = {
             AppFooter(
@@ -61,19 +67,20 @@ fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
 }
 
 @Composable
-fun FavouriteContent(
+fun PurchasesContent(
     innerPadding: PaddingValues,
     navController: NavController,
     user: User
 ) {
 
-    val filteredFavouriteProducts = remember {
-        user.getFavouriteProducts() ?: emptyList()
+    val purchases = remember {
+        user.getPurchases() ?: emptyList()
     }
+
     Column {
-        HeaderFavouriteContent()
+        HeaderPurchasesContent()
         Box {
-            if (filteredFavouriteProducts.isEmpty()) {
+            if (purchases.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -82,74 +89,21 @@ fun FavouriteContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No tienes productos favoritos todavía.",
+                        text = "No has comprado nada todavía.",
                         fontSize = 18.sp,
                         color = Color.Gray,
                         fontFamily = FontFamily(Font(R.font.muli)),
                     )
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White)
-
-                ) {
-                    val chunkedProducts =
-                        filteredFavouriteProducts.chunked(2) // Divide en grupos de 2
-                    item {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(90.dp)
-                                .background(Color(0xFF7EA24C))
-                        ) {
-                            Spacer(Modifier.size(12.dp))
-                            Text(
-                                text = "PRODUCTOS FAVORITOS",
-                                fontSize = 24.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(12.dp)
-                            )
-                            Spacer(Modifier.size(12.dp))
-                        }
-                    }
-                    items(chunkedProducts.size) { index -> // Itera por índice sobre los grupos
-                        val productPair = chunkedProducts[index] // Obtiene el par actual
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Primer producto
-                            FavouriteProductCard(productPair[0], navController, Modifier.weight(1f))
-
-                            // Segundo producto, si existe
-                            if (productPair.size > 1) {
-                                FavouriteProductCard(
-                                    productPair[1],
-                                    navController,
-                                    Modifier.weight(1f)
-                                )
-                            } else {
-                                Spacer(modifier = Modifier.weight(1f)) // Rellena el espacio
-                            }
-                        }
-                    }
-                }
+                LazyColumnPurchases(user)
             }
-
         }
     }
-
 }
 
 @Composable
-fun HeaderFavouriteContent() {
+fun HeaderPurchasesContent() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -165,7 +119,7 @@ fun HeaderFavouriteContent() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "FAVORITOS",
+                text = "TUS COMPRAS",
                 fontFamily = FontFamily(Font(R.font.muli)),
                 fontSize = 24.sp,
                 color = Color.White,
@@ -174,9 +128,82 @@ fun HeaderFavouriteContent() {
             NormalImage(
                 Modifier
                     .height(24.dp),
-                R.drawable.corazon,
+                R.drawable.carrito,
                 Color.White
             )
+        }
+    }
+}
+
+@Composable
+fun PurchaseCard(purchase: Purchase) {
+    Card(
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+    ) {
+        Column(Modifier.background(Color.White)) {
+            // 🖼️ Imágenes de productos
+            val productos = purchase.getInCartProducts()
+            val imagenes = productos.take(4) // máximo 4 imágenes para mostrar
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                imagenes.forEach {
+                    NormalImage(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        image = it.getImage(),
+                        tint = null
+                    )
+                }
+            }
+
+            // 🧾 Información de la compra
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(
+                    text = "Compra ${purchase.getId()}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily(Font(R.font.muli))
+                )
+                Text(
+                    text = "Fecha: ${purchase.getDate()}",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    fontFamily = FontFamily(Font(R.font.muli))
+                )
+                Text(
+                    text = String.format("Total: %.2f €", purchase.getTotal()),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily(Font(R.font.muli)),
+                    color = Color(0xFF333333)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LazyColumnPurchases(user: User) {
+    val purchases = user.getPurchases()?.reversed() ?: emptyList()
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        items(purchases.size) { index ->
+            val purchase = purchases[index]
+            PurchaseCard(purchase = purchase)
         }
     }
 }

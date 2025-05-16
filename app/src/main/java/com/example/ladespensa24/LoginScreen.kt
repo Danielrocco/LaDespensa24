@@ -1,6 +1,6 @@
 package com.example.ladespensa24
 
-import androidx.compose.foundation.BorderStroke
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
@@ -31,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -43,19 +44,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.ladespensa24.MyViewModel
-import com.example.ladespensa24.NormalImage
-import com.example.ladespensa24.R
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: MyViewModel) {
+    BackHandler(enabled = true) {
+        navController.navigate("mainScreen") {
+            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
+            popUpTo("mainScreen") { inclusive = false }
+            launchSingleTop = true
+        }
+    }
+
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black)
-            .padding(12.dp)
+            .background(Color.White)
+            .padding(16.dp)
     ) {
         LoginContent(Modifier.align(Alignment.Center), viewModel, navController)
     }
@@ -65,7 +71,6 @@ fun LoginScreen(navController: NavController, viewModel: MyViewModel) {
 private fun LoginContent(modifier: Modifier, viewModel: MyViewModel, navController: NavController) {
     val email: String by viewModel.email.observeAsState(initial = "")
     val passwd: String by viewModel.passwd.observeAsState(initial = "")
-    val isLoginEnable: Boolean by viewModel.isLoginEnable.observeAsState(initial = false)
     val isAlertEnable: Boolean by viewModel.isAlertVisible.observeAsState(initial = false)
 
     Column(modifier = modifier) {
@@ -73,49 +78,75 @@ private fun LoginContent(modifier: Modifier, viewModel: MyViewModel, navControll
             Modifier
                 .align(Alignment.CenterHorizontally)
                 .size(175.dp),
-            R.drawable.carne,
+            R.drawable.logo,
             null
         )
         Spacer(modifier = Modifier.size(100.dp))
         Email(email) { viewModel.onLoginChanged(it, passwd) }
         Spacer(modifier = Modifier.size(24.dp))
         Passwd(passwd) { viewModel.onLoginChanged(email, it) }
-        Spacer(modifier = Modifier.size(200.dp))
-        LoginButton(isLoginEnable, isAlertEnable) { viewModel.login(navController = navController) }
+        Spacer(modifier = Modifier.size(180.dp))
+        LoginButton(isAlertEnable, viewModel, navController)
+        Spacer(modifier = Modifier.size(24.dp))
+        GoRegisterButton(navController, viewModel)
     }
 }
 
 @Composable
-private fun LoginButton(loginEnable: Boolean, isAlertEnable: Boolean, login: () -> Unit) {
+fun GoRegisterButton(navController: NavController, viewModel: MyViewModel) {
+    Button(
+        onClick = {
+            viewModel.clearFormData()
+            navController.navigate("registerScreen") },
+        modifier = Modifier.fillMaxWidth().height(36.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            contentColor = Color.White,
+            containerColor = Color(0xFF00BCD4),
+            disabledContentColor = Color.White,
+            disabledContainerColor = Color(0xFFC9C9C9)
+        )
+    ) {
+        Text(
+            text = "Registrate",
+            fontFamily = FontFamily(Font(R.font.muli)),
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            fontSize = 14.sp
+        )
+    }
+}
 
+
+
+@Composable
+private fun LoginButton(isAlertEnable: Boolean, viewModel: MyViewModel, navController: NavController) {
     Text(
         text = "No se encontro ese correo o la contraseña es incorrecta",
         modifier = Modifier.fillMaxWidth(),
         color = if (isAlertEnable) Color.Red
         else Color.Transparent,
-        fontFamily = FontFamily(Font(R.font.mulilight)),
+        fontFamily = FontFamily(Font(R.font.muli)),
         fontWeight = FontWeight.Bold,
         fontSize = 12.sp,
         textAlign = TextAlign.Center
     )
+    Spacer(modifier = Modifier.size(12.dp))
     Button(
-        onClick = { login() },
-        enabled = loginEnable,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RectangleShape,
-        border = BorderStroke(3.dp, Color.White),
-        colors = ButtonDefaults.buttonColors(
-            contentColor = Color.White,
-            containerColor = Color.Black,
-            disabledContentColor = Color(0xFF6D6D6D),
-            disabledContainerColor = Color.Black
-        )
+        onClick = {
+            viewModel.login(navController)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xffb5e354))
     ) {
         Text(
-            text = "Inicia sesión",
-            fontFamily = FontFamily(Font(R.font.mulilight)),
-            fontWeight = FontWeight.Bold
-        )
+            text = "Iniciar sesión",
+            fontFamily = FontFamily(Font(R.font.muli)),
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            fontSize = 18.sp)
     }
 }
 
@@ -130,7 +161,7 @@ private fun Email(email: String, onTextFieldChanged: (String) -> Unit) {
             painter = painterResource(id = R.drawable.persona),
             contentDescription = "Icono persona",
             modifier = Modifier.size(30.dp),
-            colorFilter = ColorFilter.tint(Color.White)
+            colorFilter = ColorFilter.tint(Color.Black)
         )
         Spacer(modifier = Modifier.size(20.dp))
         TextField(value = email,
@@ -141,9 +172,9 @@ private fun Email(email: String, onTextFieldChanged: (String) -> Unit) {
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color(0xFF383838),
                 unfocusedTextColor = Color(0xFF383838),
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White,
+                focusedContainerColor = Color(0xFFF3F3F3),
+                unfocusedContainerColor = Color(0xFFF3F3F3),
+                disabledContainerColor = Color(0xFFF3F3F3),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
             ),
@@ -153,7 +184,7 @@ private fun Email(email: String, onTextFieldChanged: (String) -> Unit) {
             placeholder = {
                 Text(
                     text = "Correo",
-                    fontFamily = FontFamily(Font(R.font.mulilight)),
+                    fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold
                 )
             })
@@ -173,7 +204,7 @@ private fun Passwd(passwd: String, onTextFieldChanged: (String) -> Unit) {
             painter = painterResource(id = R.drawable.candado),
             contentDescription = "Icono persona",
             modifier = Modifier.size(30.dp),
-            colorFilter = ColorFilter.tint(Color.White)
+            colorFilter = ColorFilter.tint(Color.Black)
         )
         Spacer(modifier = Modifier.size(20.dp))
         TextField(
@@ -185,9 +216,9 @@ private fun Passwd(passwd: String, onTextFieldChanged: (String) -> Unit) {
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color(0xFF383838),
                 unfocusedTextColor = Color(0xFF383838),
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White,
+                focusedContainerColor = Color(0xFFF3F3F3),
+                unfocusedContainerColor = Color(0xFFF3F3F3),
+                disabledContainerColor = Color(0xFFF3F3F3),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
             ),
@@ -197,7 +228,7 @@ private fun Passwd(passwd: String, onTextFieldChanged: (String) -> Unit) {
             placeholder = {
                 Text(
                     text = "Contraseña",
-                    fontFamily = FontFamily(Font(R.font.mulilight)),
+                    fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold
                 )
             },

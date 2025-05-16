@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 
 open class User(
@@ -14,7 +15,7 @@ open class User(
     private var address: String,
     private var payCard: String,
     private var cartProducts: MutableList<InCartProduct>?,
-    private var favouriteProducts: List<Product>?,
+    private var favouriteProducts: MutableList<Product>?,
     private var purchases: MutableList<Purchase>?,
     ) {
 
@@ -46,7 +47,7 @@ open class User(
         return cartProducts
     }
 
-    fun getFavouriteProducts(): List<Product>? {
+    fun getFavouriteProducts(): MutableList<Product>? {
         return favouriteProducts
     }
 
@@ -64,10 +65,27 @@ open class User(
 
     }
 
+    fun setName(value: String) {
+        name = value
+    }
+
+    fun setSurname(value: String) {
+        surname = value
+    }
+
+    fun setAddress(value: String) {
+        address = value
+    }
+
+    fun setPayCard(value: String) {
+        payCard = value
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     fun buyProducts() {
         val localDate = LocalDate.now()
-        val date: Date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Por ejemplo: "16/05/2025"
+        val formattedDate = localDate.format(formatter)
 
         val purchasedList = mutableListOf<InCartProduct>()
 
@@ -83,28 +101,47 @@ open class User(
                     product.getIsDiscounted(),
                     product.getDiscount(),
                     product.getIsNew(),
-                    product.getTotalPrice(),
                     product.getUnits()
                 )
             )
         }
 
-        // 💝 Crear la nueva Purchase
-        val newPurchase = Purchase(purchasedList, date)
+        // ✅ Crear nueva Purchase con fecha formateada (String)
+        val newPurchase = Purchase(
+            inCartProducts = purchasedList,
+            date = formattedDate // <- Ahora es String
+        )
 
-        // 🛍️ Agregarla a la lista de purchases
+        // Agregar la compra
         if (purchases == null) {
             purchases = mutableListOf()
         }
         (purchases as MutableList<Purchase>).add(newPurchase)
 
-        // 🧼 Limpiar carrito
+        // Limpiar carrito
         cartProducts?.clear()
     }
 
 
     fun removeFromKart(productTitle: String) {
         cartProducts?.removeIf { it.getTitle() == productTitle }
+    }
+
+    fun addToFavorites(product: Product) {
+        if (favouriteProducts == null) {
+            favouriteProducts = mutableListOf()
+        }
+        if (!favouriteProducts!!.contains(product)) {
+            favouriteProducts!!.add(product)
+        }
+    }
+
+    fun removeFromFavorites(product: Product) {
+        favouriteProducts?.remove(product)
+    }
+
+    fun isFavorite(product: Product): Boolean {
+        return favouriteProducts?.contains(product) ?: false
     }
 
     fun addToCart(product: Product, units: Int) {
@@ -131,7 +168,6 @@ open class User(
                     product.getIsDiscounted(),
                     product.getDiscount(),
                     product.getIsNew(),
-                    product.getPrice() * units,
                     units
                 )
             )

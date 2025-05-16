@@ -14,26 +14,35 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -48,37 +57,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import kotlin.times
 
 @Composable
 fun ProductScreen(navController: NavController, viewModel: MyViewModel, product: Product) {
+
+    val isLogged by viewModel.isLogged.observeAsState(false)
+
     Scaffold(
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = 20.dp, // Aumenta la elevación para una sombra más visible
-                        shape = RoundedCornerShape(0.dp), // Mantiene los bordes rectos
-                        ambientColor = Color.Black.copy(alpha = 1.2f), // Color negro con más opacidad
-                        spotColor = Color.Black.copy(alpha = 1.2f) // Ajusta el color de la sombra proyectada
-                    )
-            ) {
-                ProductHeader(product, navController)
-            }
-        },
         content = { innerPadding ->
-            ProductScreenContent(innerPadding, product, navController)
+            ProductScreenContent(innerPadding, product, navController, viewModel, isLogged)
         }
     )
 }
 
 @Composable
-fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navController: NavController) {
-    LazyColumn (
+fun ProductScreenContent(
+    innerPadding: PaddingValues,
+    product: Product,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
+
+    var unidades by remember { mutableIntStateOf(1) }
+
+    var isFavorite by remember { mutableStateOf(false) }
+
+    val currentFavorite = viewModel.isProductFavorite(product)
+    LaunchedEffect(currentFavorite) {
+        isFavorite = currentFavorite
+    }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(innerPadding)
     ) {
         item {
             Image(
@@ -91,15 +105,37 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
             )
         }
         item {
-            Text(
-                text = product.getTitle(),
-                fontFamily = FontFamily(Font(R.font.muli)),
-                fontSize = 26.sp,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
+            Row(
                 modifier = Modifier
-                    .padding(start = 16.dp, top = 16.dp, end = 16.dp)
-            )
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = product.getTitle(),
+                    fontFamily = FontFamily(Font(R.font.muli)),
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(
+                    onClick = {
+                        if (isLogged) {
+                            viewModel.toggleFavorite(product)
+                            isFavorite = viewModel.isProductFavorite(product)
+                        } else {
+                            navController.navigate("loginScreen")
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                        tint = if (isFavorite) Color.Red else Color.Gray
+                    )
+                }
+            }
         }
         item {
             Text(
@@ -114,11 +150,17 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
             )
         }
         item {
-            Row (modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = (if (product.getIsDiscounted()) product.getDiscountedPrice().toString() + " €" else { product.getPrice().toString() + "€" }),
+                    text = if (product.getIsDiscounted())
+                        String.format("%.2f €", product.getDiscountedPrice())
+                    else
+                        String.format("%.2f €", product.getPrice()),
                     fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -134,6 +176,42 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
             }
         }
         item {
+            Row(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Unidades: $unidades",
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                    fontFamily = FontFamily(Font(R.font.muli)),
+                    fontSize = 14.sp
+                )
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = "Remove unity",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable {
+                            if (unidades != 1) {
+                                unidades--
+                            }
+                        }
+                )
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add unity",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable {
+                            unidades++
+                        })
+            }
+        }
+        item {
+            val priceToShow =
+                if (product.getIsDiscounted()) product.getDiscountedPrice() else product.getPrice()
+
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,10 +221,15 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
                     contentColor = Color.White,
                     containerColor = Color(0xffb5e354)
                 ),
-                onClick = {}
+                onClick = {
+                    if (isLogged) {
+                        viewModel.getUsuarioEnUso().addToCart(product, unidades)
+                        navController.navigate("cartScreen")
+                    } else navController.navigate("loginScreen")
+                }
             ) {
                 Text(
-                    "Añadir a la cesta",
+                    "Añadir a la cesta (${String.format("%.2f", priceToShow * unidades)}€)",
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -164,6 +247,7 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
                     .fillMaxWidth()
                     .background(Color.Gray)
             ) {
+
                 Column {
                     Text(
                         text = "Productos Relacionados",
@@ -173,7 +257,8 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
                         fontSize = 18.sp,
                         modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
                     )
-                    RelatedLazyRow(navController)
+                    RelatedLazyRow(navController, viewModel, isLogged)
+                    Spacer(modifier = Modifier.size(36.dp))
                 }
             }
         }
@@ -181,7 +266,7 @@ fun ProductScreenContent(innerPadding: PaddingValues, product: Product, navContr
 }
 
 @Composable
-fun RelatedLazyRow(navController: NavController) {
+fun RelatedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
 
     val filteredTrendingProducts = remember {
         productsInStorage.filter { it.getFeatured() }
@@ -191,49 +276,7 @@ fun RelatedLazyRow(navController: NavController) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredTrendingProducts.size) { index ->
-            ProductCard(filteredTrendingProducts[index], navController)
+            ProductCard(filteredTrendingProducts[index], navController, viewModel, isLogged)
         }
     }
 }
-
-@Composable
-fun ProductHeader(product: Product, navController: NavController) {
-    var isFavorite: Boolean by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color(0xFF855C41))
-            .zIndex(1f)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable {
-                        navController.popBackStack()
-                        navController.navigate("mainScreen") },
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = Color.White
-            )
-            IconButton(
-                modifier = Modifier
-                    .size(30.dp),
-                onClick = {
-                    isFavorite = !isFavorite
-                }
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
-                    tint = if (isFavorite) Color.Red else Color.White
-                )
-            }
-        }
-    }
-}
-

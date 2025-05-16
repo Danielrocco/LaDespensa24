@@ -4,10 +4,10 @@ import android.util.Patterns
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
-import java.util.Date
 
 class MyViewModel : ViewModel() {
 
@@ -23,8 +23,6 @@ class MyViewModel : ViewModel() {
         null
     )
 
-
-
     private var userEnUso: User = userDefault
 
     private val _selectedIcon = mutableStateOf("mainScreen")
@@ -34,7 +32,17 @@ class MyViewModel : ViewModel() {
         _selectedIcon.value = screen
     }
 
+    private val _name = MutableLiveData<String>()
+    val name: LiveData<String> = _name
 
+    private val _surname = MutableLiveData<String>()
+    val surname: LiveData<String> = _surname
+
+    private val _address = MutableLiveData<String>()
+    val address: LiveData<String> = _address
+
+    private val _payCard = MutableLiveData<String>()
+    val payCard: LiveData<String> = _payCard
 
     private val _email = MutableLiveData<String>()
     val email: LiveData<String> = _email
@@ -51,6 +59,21 @@ class MyViewModel : ViewModel() {
     private val _isAlertVisible = MutableLiveData<Boolean>()
     val isAlertVisible: LiveData<Boolean> = _isAlertVisible
 
+    private val _entireAmount = MutableLiveData<Double>(0.0)
+    var entireAmount: LiveData<Double> = _entireAmount
+
+    fun setEntireAmount(user: User) {
+        _entireAmount.value = user.getEntireAmountOfCart()
+    }
+
+    val isNameValid = MutableLiveData(false)
+    val isSurnameValid = MutableLiveData(false)
+    val isAddressValid = MutableLiveData(false)
+    val isEmailValid = MutableLiveData(false)
+    val isPasswordValid = MutableLiveData(false)
+    val isCardValid = MutableLiveData(false)
+    val isEmailExist = MutableLiveData(false)
+
 
     fun setUsuarioEnUso(user: User) {
         userEnUso = user
@@ -60,7 +83,7 @@ class MyViewModel : ViewModel() {
         return userEnUso
     }
 
-    private val users = listOf(
+    private val users = mutableListOf(
         User(
             "Daniel",
             "Rocco",
@@ -69,7 +92,7 @@ class MyViewModel : ViewModel() {
             "Calle Gimenez y costa 36",
             "1000200030004000",
             cartProducts = mutableListOf<InCartProduct>(),
-            favouriteProducts = listOf<Product>(),
+            favouriteProducts = mutableListOf<Product>(),
             purchases = mutableListOf<Purchase>()
         )
     )
@@ -78,24 +101,108 @@ class MyViewModel : ViewModel() {
         return users
     }
 
+    val isRegisterEnable: LiveData<Boolean> = MediatorLiveData<Boolean>().apply {
+        addSource(isEmailValid) { updateRegisterButtonState() }
+        addSource(isPasswordValid) { updateRegisterButtonState() }
+        addSource(isCardValid) { updateRegisterButtonState() }
+        addSource(name) { updateRegisterButtonState() }
+        addSource(surname) { updateRegisterButtonState() }
+        addSource(address) { updateRegisterButtonState() }
+    }
 
+    private fun updateRegisterButtonState() {
+        (isRegisterEnable as MediatorLiveData<Boolean>).value = !name.value.isNullOrEmpty() &&
+                !surname.value.isNullOrEmpty() &&
+                !address.value.isNullOrEmpty() &&
+                isEmailValid.value == true &&
+                isPasswordValid.value == true &&
+                isCardValid.value == true
+    }
+
+
+    fun register(navController: NavController) {
+        val newUser = User(
+            name = _name.value ?: "",
+            surname = _surname.value ?: "",
+            email = _email.value ?: "",
+            passwd = _passwd.value ?: "",
+            address = _address.value ?: "",
+            payCard = _payCard.value ?: "",
+            cartProducts = mutableListOf(),
+            favouriteProducts = mutableListOf(),
+            purchases = mutableListOf()
+        )
+
+        // Aquí podrías validar que no exista ya un usuario con ese correo
+        if (users.none { it.getEmail() == newUser.getEmail() }) {
+            _isLogged.value = true
+            users.add(newUser)
+            setUsuarioEnUso(newUser)
+            clearFormData()
+            navController.navigate("userScreen") {
+                popUpTo("registerScreen") { inclusive = true }
+            }
+        } else {
+            _isAlertVisible.value = true
+        }
+    }
+
+    fun onRegisterDataChanged(name: String, surname: String, email: String, passwd: String, address: String, payCard: String) {
+        this._name.value = name
+        this._surname.value = surname
+        this._email.value = email
+        this._passwd.value = passwd
+        this._address.value = address
+        this._payCard.value = payCard
+
+        // Verificamos si el correo es válido y si ya existe
+        isNameValid.value = name.isNotBlank()
+        isSurnameValid.value = surname.isNotBlank()
+        isAddressValid.value = address.isNotBlank()
+        isEmailValid.value = isValidEmail(email) && !checkIfEmailExists(email)  // Solo válido si no existe
+        isEmailExist.value = checkIfEmailExists(email)  // Estado del correo ya existente
+        isPasswordValid.value = isValidPassword(passwd)
+        isCardValid.value = isValidCard(payCard)
+    }
+
+    fun checkIfEmailExists(email: String): Boolean {
+        return users.any { it.getEmail() == email }
+    }
+
+    fun isValidEmail(email: String): Boolean = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    fun isValidPassword(passwd: String): Boolean = passwd.length > 7
+    fun isValidCard(card: String): Boolean = card.length == 16 && card.all { it.isDigit() }
 
     fun login(navController: NavController) {
-        if (users.any { it.getEmail() == email.value }) {
-            val usuarioEncontrado = users.find { it.getEmail() == email.value }
-            if (usuarioEncontrado != null) {
-                if (usuarioEncontrado.getPasswd() == passwd.value) {
-                    _isLogged.value = true
-                    setUsuarioEnUso(usuarioEncontrado)
-                    navController.navigate("userScreen/${usuarioEncontrado.getEmail()}")
-                } else _isAlertVisible.value = true
+        val emailValue = email.value.orEmpty()
+        val passwdValue = passwd.value.orEmpty()
+
+        // Validación de campos vacíos
+        if (emailValue.isBlank() || passwdValue.isBlank()) {
+            _isAlertVisible.value = true
+            return
+        }
+
+        // Buscar usuario
+        val user = users.find { it.getEmail() == emailValue }
+
+        if (user != null && user.getPasswd() == passwdValue) {
+            _isLogged.value = true
+            setUsuarioEnUso(user)
+            clearFormData()
+            navController.navigate("userScreen") {
+                popUpTo("loginScreen") { inclusive = true }
             }
-        } else _isAlertVisible.value = true
+
+        } else {
+            _isAlertVisible.value = true
+        }
     }
 
     fun logout(navController: NavController) {
         setUsuarioEnUso(userDefault)
         _isLogged.value = false
+        clearFormData()
         navController.navigate("mainScreen")
     }
 
@@ -105,8 +212,28 @@ class MyViewModel : ViewModel() {
         _isLoginEnable.value = isValidEmail(email) && isValidPassword(passwd)
     }
 
-    private fun isValidEmail(email: String): Boolean =
-        Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    fun clearFormData() {
+        _name.value = ""
+        _surname.value = ""
+        _email.value = ""
+        _passwd.value = ""
+        _address.value = ""
+        _payCard.value = ""
+        _isAlertVisible.value = false
+    }
 
-    private fun isValidPassword(passwd: String): Boolean = passwd.length > 7
+    fun toggleFavorite(product: Product) {
+        if (_isLogged.value == true) {
+            if (userEnUso.isFavorite(product)) {
+                userEnUso.removeFromFavorites(product)
+            } else {
+                userEnUso.addToFavorites(product)
+            }
+        }
+    }
+
+    fun isProductFavorite(product: Product): Boolean {
+        return userEnUso.isFavorite(product)
+    }
 }
+

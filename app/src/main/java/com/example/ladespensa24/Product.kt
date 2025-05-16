@@ -2,6 +2,7 @@ package com.example.ladespensa24
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +12,24 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,11 +44,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.util.Date
+import java.util.UUID
 
 val productsInStorage = listOf(
-    Product("Pan", "1 barra de pan",12.02, ProductCategories.Horno, R.drawable.pan, true, true, 50, false),
-    Product("Manzana", "180g ",12.02, ProductCategories.Fruta, R.drawable.manzana, true, false, 0, true),
-    Product("lechuga", "200g",12.02, ProductCategories.Verdura, R.drawable.lechuga, true, true, 60, false)
+    Product(
+        "Pan",
+        "1 barra de pan",
+        12.02,
+        ProductCategories.Horno,
+        R.drawable.pan,
+        true,
+        true,
+        50,
+        false
+    ),
+    Product(
+        "Manzana",
+        "180g ",
+        12.02,
+        ProductCategories.Fruta,
+        R.drawable.manzana,
+        true,
+        false,
+        0,
+        true
+    ),
+    Product(
+        "lechuga",
+        "200g",
+        12.02,
+        ProductCategories.Verdura,
+        R.drawable.lechuga,
+        true,
+        true,
+        60,
+        false
+    )
 )
 
 enum class ProductCategories {
@@ -93,7 +135,7 @@ open class Product(
     }
 
     fun getDiscountedPrice(): Double {
-        return (getPrice() - (getPrice()/100*getDiscount()))
+        return (getPrice() - (getPrice() / 100 * getDiscount()))
     }
 }
 
@@ -107,13 +149,13 @@ open class InCartProduct(
     isDiscounted: Boolean,
     discount: Int,
     isNew: Boolean,
-    private var totalPrice: Double,
     private var units: Int
 ) :
     Product(title, description, price, category, image, isFeatured, isDiscounted, discount, isNew) {
 
     fun getTotalPrice(): Double {
-        return totalPrice
+        val pricePerUnit = if (getIsDiscounted()) getDiscountedPrice() else getPrice()
+        return pricePerUnit * units
     }
 
     fun getUnits(): Int {
@@ -121,36 +163,48 @@ open class InCartProduct(
     }
 
     fun addUnits() {
-        totalPrice += getPrice()
         units++
     }
 
     fun removeUnits() {
-        totalPrice -= getPrice()
         units--
     }
 }
 
 class Purchase(
-    private var boughtProducts: List<InCartProduct>,
-    private var purchaseDate: Date
+    private val inCartProducts: List<InCartProduct>,
+    private val date: String,
+    private val purchaseId: String = UUID.randomUUID().toString().take(8) // Ej: "a7f83b2c"
 ) {
-    fun getPurchaseDate(): Date {
-        return purchaseDate
+    private val total: Double = inCartProducts.sumOf {
+        val precioUnitario = if (it.getIsDiscounted()) it.getDiscountedPrice() else it.getPrice()
+        precioUnitario * it.getUnits()
     }
+
+    fun getInCartProducts() = inCartProducts
+    fun getDate() = date
+    fun getId() = purchaseId
+    fun getTotal() = total
 }
 
 @Composable
-fun ProductCard(product: Product, navController: NavController) {
+fun ProductCard(
+    product: Product,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
 
     Card(
         modifier = Modifier
             .padding(12.dp)
             .width(200.dp),
         shape = RoundedCornerShape(16.dp),
-        onClick = { navController.navigate("productScreen/${product.getTitle()}") {
-            launchSingleTop = true
-        } },
+        onClick = {
+            navController.navigate("productScreen/${product.getTitle()}") {
+                launchSingleTop = true
+            }
+        },
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Column(Modifier.background(Color.White)) {
@@ -166,7 +220,7 @@ fun ProductCard(product: Product, navController: NavController) {
                     painter = painterResource(product.getImage()),
                     contentDescription = "Imagen del producto",
                     contentScale = ContentScale.Crop
-                    )
+                )
             }
             Row(
                 modifier = Modifier
@@ -190,7 +244,10 @@ fun ProductCard(product: Product, navController: NavController) {
                 }
                 Column {
                     Text(
-                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice().toString() + "€" else { product.getPrice().toString() + " €" }),
+                        text = if (product.getIsDiscounted())
+                            String.format("%.2f €", product.getDiscountedPrice())
+                        else
+                            String.format("%.2f €", product.getPrice()),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
@@ -217,7 +274,7 @@ fun ProductCard(product: Product, navController: NavController) {
                         .background(if (product.getIsDiscounted()) Color.Red else Color.White)
                 ) {
                     Text(
-                        text = " -" + product.getDiscount().toString()+ "% ",
+                        text = " -" + product.getDiscount().toString() + "% ",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
@@ -229,7 +286,123 @@ fun ProductCard(product: Product, navController: NavController) {
                         .height(50.dp)
                         .width(130.dp)
                         .padding(8.dp),
-                    onClick = { /* Acción del botón */ },
+                    onClick = {
+                        if (isLogged) {
+                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            navController.navigate("cartScreen")
+                        } else navController.navigate("loginScreen")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White,
+                        containerColor = Color(0xffb5e354)
+                    ),
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        "Añadir a la cesta",
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilteredProductCard(
+    product: Product,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
+    Card(
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        onClick = {
+            navController.navigate("productScreen/${product.getTitle()}") {
+                launchSingleTop = true
+            }
+        },
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+
+        ) {
+        Column(Modifier.background(Color.White)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+            ) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    painter = painterResource(product.getImage()),
+                    contentDescription = "Imagen del producto",
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = product.getTitle(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = product.getDescription(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontSize = 12.sp
+                    )
+                }
+                Column {
+                    Text(
+                        text = if (product.getIsDiscounted())
+                            String.format("%.2f €", product.getDiscountedPrice())
+                        else
+                            String.format("%.2f €", product.getPrice()),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
+                        text = product.getPrice().toString() + " €",
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.LineThrough,
+                        fontSize = 9.sp
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End // Alinear a la derecha
+            ) {
+                Button(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(130.dp)
+                        .padding(8.dp),
+                    onClick = {
+                        if (isLogged) {
+                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            navController.navigate("cartScreen")
+                        } else navController.navigate("loginScreen")
+                    },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.White,
                         containerColor = Color(0xffb5e354)
@@ -324,15 +497,22 @@ fun FavouriteProductCard(
 }
 
 @Composable
-fun NewProductCard(product: Product, navController: NavController) {
+fun NewProductCard(
+    product: Product,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
 
     Card(
         modifier = Modifier
             .padding(12.dp)
             .width(260.dp),
-        onClick = { navController.navigate("productScreen/${product.getTitle()}") {
-            launchSingleTop = true
-        } },
+        onClick = {
+            navController.navigate("productScreen/${product.getTitle()}") {
+                launchSingleTop = true
+            }
+        },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
@@ -379,7 +559,10 @@ fun NewProductCard(product: Product, navController: NavController) {
                 }
                 Column {
                     Text(
-                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice().toString() + "€" else { product.getPrice().toString() + " €" }),
+                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice()
+                            .toString() + "€" else {
+                            product.getPrice().toString() + " €"
+                        }),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
@@ -404,7 +587,12 @@ fun NewProductCard(product: Product, navController: NavController) {
                         .height(50.dp)
                         .width(130.dp)
                         .padding(8.dp),
-                    onClick = { /* Acción del botón */ },
+                    onClick = {
+                        if (isLogged) {
+                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            navController.navigate("cartScreen")
+                        } else navController.navigate("loginScreen")
+                    },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.White,
                         containerColor = Color(0xffb5e354)

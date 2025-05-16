@@ -1,6 +1,7 @@
 package com.example.ladespensa24
 
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,46 +56,60 @@ import androidx.navigation.NavController
 
 @Composable
 fun MainScreen(navController: NavController, viewModel: MyViewModel) {
+    val isLogged by viewModel.isLogged.observeAsState(false)
+
     Scaffold(
         topBar = {
-            AppHeader()
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Spacer(modifier = Modifier.height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()))
+                AppHeader(navController, Color.White)
+            }
         }, content = { innerPadding ->
-            MainScreenContent(innerPadding, navController)
+            MainScreenContent(innerPadding, navController, viewModel, isLogged)
         }, bottomBar = {
-            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth(), navController, viewModel)
+            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth(), navController, viewModel, isLogged)
         }
     )
 }
 
 @Composable
-fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyViewModel) {
+fun AppFooter(
+    modifier: Modifier,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
     val selectedIcon = viewModel.selectedIcon.value
 
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 40.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 40.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(44.dp)
-                .background(Color(0xFF7A7A7A)) // Color de fondo dentro de la Card
+                .height(50.dp)
+                .background(Color(0xFF7A7A7A))
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Casa
             NormalImage(
                 Modifier
                     .height(24.dp)
                     .weight(1f)
-                    .clickable { navController.popBackStack()
+                    .clickable {
+                        navController.popBackStack()
                         navController.navigate("mainScreen")
                         viewModel.selectIcon("mainScreen")
-                               },
+                    },
                 R.drawable.casa,
                 if (selectedIcon == "mainScreen") Color.White else Color(0xFFD2D2D2)
             )
+
+            // Menú
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = null,
@@ -97,27 +117,66 @@ fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyVie
                 modifier = Modifier
                     .height(34.dp)
                     .weight(1f)
-                    .clickable { navController.popBackStack()
+                    .clickable {
+                        navController.popBackStack()
                         navController.navigate("categoriesScreen")
-                        viewModel.selectIcon("categoriesScreen")},
+                        viewModel.selectIcon("categoriesScreen")
+                    }
             )
+
+            // Carrito
             NormalImage(
                 Modifier
                     .height(24.dp)
                     .weight(1f)
-                    .clickable { navController.popBackStack()
-                        navController.navigate("favouriteScreen")
-                        viewModel.selectIcon("favouriteScreen")},
+                    .clickable {
+                        navController.popBackStack()
+                        if (isLogged) {
+                            navController.navigate("cartScreen")
+                            viewModel.selectIcon("cartScreen")
+                        } else {
+                            navController.navigate("loginScreen")
+                            viewModel.selectIcon("loginScreen")
+                        }
+                    },
+                R.drawable.carrito,
+                if (selectedIcon == "favouriteScreen") Color.White else Color(0xFFD2D2D2)
+            )
+
+            // Corazón
+            NormalImage(
+                Modifier
+                    .height(24.dp)
+                    .weight(1f)
+                    .clickable {
+                        navController.popBackStack()
+                        if (isLogged) {
+                            navController.navigate("favouriteScreen")
+                            viewModel.selectIcon("favouriteScreen")
+                        } else {
+                            navController.navigate("loginScreen")
+                            viewModel.selectIcon("loginScreen")
+                        }
+                    },
                 R.drawable.corazon,
                 if (selectedIcon == "favouriteScreen") Color.White else Color(0xFFD2D2D2)
             )
+
+            // Persona
             NormalImage(
                 Modifier
                     .height(24.dp)
                     .weight(1f)
-                    .clickable { navController.popBackStack()
-                        navController.navigate("userScreen")
-                        viewModel.selectIcon("userScreen") },
+                    .clickable {
+                        navController.popBackStack()
+                        if (isLogged) {
+                            navController.navigate("userScreen")
+                            viewModel.selectIcon("userScreen")
+                        } else {
+                            navController.navigate("loginScreen")
+                            viewModel.selectIcon("loginScreen")
+                        }
+                    },
                 R.drawable.persona,
                 if (selectedIcon == "userScreen") Color.White else Color(0xFFD2D2D2)
             )
@@ -126,7 +185,7 @@ fun AppFooter(modifier: Modifier, navController: NavController, viewModel: MyVie
 }
 
 @Composable
-fun MainScreenContent(paddingValues: PaddingValues, navController: NavController) {
+fun MainScreenContent(paddingValues: PaddingValues, navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     Column {
         Box(
             Modifier
@@ -201,7 +260,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
 
                     }
                     Spacer(modifier = Modifier.size(10.dp))
-                    FeaturedLazyRow(navController)
+                    FeaturedLazyRow(navController, viewModel, isLogged)
                 }
 
                 item {
@@ -245,7 +304,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
 
                     }
                     Spacer(modifier = Modifier.size(12.dp))
-                    NewsLazyRow(navController)
+                    NewsLazyRow(navController, viewModel, isLogged)
 
                 }
                 item {
@@ -289,7 +348,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                         }
                     }
                     Spacer(modifier = Modifier.size(12.dp))
-                    DiscountedLazyRow(navController)
+                    DiscountedLazyRow(navController, viewModel, isLogged)
                     Spacer(modifier = Modifier.size(70.dp))
                 }
             }
@@ -299,7 +358,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
 }
 
 @Composable
-fun NewsLazyRow(navController: NavController) {
+fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val filteredNewProducts = remember {
         productsInStorage.filter { it.getIsNew() }
     }
@@ -308,13 +367,13 @@ fun NewsLazyRow(navController: NavController) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredNewProducts.size) { index ->
-            NewProductCard(filteredNewProducts[index], navController)
+            NewProductCard(filteredNewProducts[index], navController, viewModel, isLogged)
         }
     }
 }
 
 @Composable
-fun DiscountedLazyRow(navController: NavController) {
+fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val filteredDiscountedProducts = remember {
         productsInStorage.filter { it.getIsDiscounted() }
     }
@@ -323,13 +382,13 @@ fun DiscountedLazyRow(navController: NavController) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredDiscountedProducts.size) { index ->
-            ProductCard(filteredDiscountedProducts[index], navController)
+            ProductCard(filteredDiscountedProducts[index], navController, viewModel, isLogged)
         }
     }
 }
 
 @Composable
-fun FeaturedLazyRow(navController: NavController) {
+fun FeaturedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
 
     val filteredTrendingProducts = remember {
         productsInStorage.filter { it.getFeatured() }
@@ -339,40 +398,43 @@ fun FeaturedLazyRow(navController: NavController) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredTrendingProducts.size) { index ->
-            ProductCard(filteredTrendingProducts[index], navController)
+            ProductCard(filteredTrendingProducts[index], navController, viewModel, isLogged)
         }
     }
 }
 
-@Preview
 @Composable
-fun SearchBarButton() {
+fun SearchBarButton(navController: NavController, modifier: Modifier = Modifier) {
     Button(
-        onClick = { },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .padding(top = 30.dp),
+        onClick = {
+            navController.navigate("searchScreen")
+        },
+        modifier = modifier
+            .height(56.dp), // Altura estándar
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 20.dp),
         colors = ButtonDefaults.buttonColors(
             contentColor = Color.Gray,
             containerColor = Color.White,
-        )
+        ),
+        contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
-        Row {
-            NormalImage(
-                modifier = Modifier
-                    .size(20.dp),
-                image = R.drawable.lupa,
-                tint = Color.Gray
-            )
-            Spacer(modifier = Modifier.size(18.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = stringResource(id = R.string.SearchBarPlaceholderES),
+                modifier = Modifier.weight(1f),
                 color = Color.Gray,
                 fontFamily = FontFamily(Font(R.font.muli)),
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                maxLines = 1
+            )
+
+            NormalImage(
+                modifier = Modifier.size(20.dp),
+                image = R.drawable.lupa,
+                tint = Color.Gray
             )
         }
     }
@@ -391,15 +453,29 @@ fun NormalImage(modifier: Modifier, image: Int, tint: Color?) {
 }
 
 @Composable
-fun Logo() {
-    TODO("pipi")
-}
+fun AppHeader(navController: NavController, color: Color) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Logo a la izquierda
+        NormalImage(
+            modifier = Modifier
+                .size(56.dp), // Altura estándar
+            image = R.drawable.logo,
+            tint = color // Usa el color original del logo
+        )
 
-@Composable
-fun AppHeader() {
-    Row {
-        SearchBarButton()
-        //Logo()
+        Spacer(modifier = Modifier.size(12.dp)) // Espacio entre logo y botón
+
+        // Botón que ocupa el resto del espacio
+        SearchBarButton(
+            navController = navController,
+            modifier = Modifier.weight(1f)
+        )
     }
-    Spacer(modifier = Modifier.size(18.dp))
+
+    Spacer(modifier = Modifier.height(18.dp))
 }
