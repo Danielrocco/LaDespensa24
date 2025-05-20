@@ -257,7 +257,7 @@ fun ProductScreenContent(
                         fontSize = 18.sp,
                         modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
                     )
-                    RelatedLazyRow(navController, viewModel, isLogged)
+                    RelatedLazyRow(product, navController, viewModel, isLogged)
                     Spacer(modifier = Modifier.size(36.dp))
                 }
             }
@@ -266,17 +266,24 @@ fun ProductScreenContent(
 }
 
 @Composable
-fun RelatedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
-
-    val filteredTrendingProducts = remember {
-        productsInStorage.filter { it.getFeatured() }
+fun RelatedLazyRow(
+    currentProduct: Product,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
+    val relatedProducts = remember {
+        viewModel.getAllProducts().filter {
+            it.getCategory() == currentProduct.getCategory() && it.getTitle() != currentProduct.getTitle()
+        }
     }
 
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
-        items(filteredTrendingProducts.size) { index ->
-            ProductCard(filteredTrendingProducts[index], navController, viewModel, isLogged)
+        items(relatedProducts.size) { index ->
+            ProductCard(relatedProducts[index], navController, viewModel, isLogged)
         }
     }
 }

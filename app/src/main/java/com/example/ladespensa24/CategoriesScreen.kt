@@ -37,39 +37,54 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-
 @Composable
 fun CategoriesScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
-            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
             popUpTo("mainScreen") { inclusive = false }
             launchSingleTop = true
         }
     }
+
     val isLogged by viewModel.isLogged.observeAsState(false)
 
     Scaffold(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Spacer(modifier = Modifier.height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()))
+                Spacer(
+                    modifier = Modifier.height(
+                        WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                    )
+                )
                 AppHeader(navController, Color.Black)
             }
         }, content = { innerPadding ->
             CategoriesScreenContent(innerPadding, navController)
         }, bottomBar = {
-            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth(), navController, viewModel, isLogged)
+            AppFooter(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth(),
+                navController,
+                viewModel,
+                isLogged
+            )
         }
     )
 }
 
 @Composable
 fun CategoriesScreenContent(innerPadding: PaddingValues, navController: NavController) {
-
     Column {
-        Box(modifier = Modifier.fillMaxSize().background(Color.White).padding(12.dp).padding(top = 100.dp)) {
-            LazyColumn (verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(12.dp)
+                .padding(top = 100.dp)
+        ) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 item {
                     Text(
                         text = "Categorías",
@@ -83,13 +98,13 @@ fun CategoriesScreenContent(innerPadding: PaddingValues, navController: NavContr
                     )
                 }
                 item {
-                    CategoryCard("Fruta",1, navController)
+                    CategoryCard("Frutería", R.drawable.fruteria, navController)
                 }
                 item {
-                    CategoryCard("Verdura",1, navController)
+                    CategoryCard("Carnicería", R.drawable.carniceria, navController)
                 }
                 item {
-                    CategoryCard("Horno",1, navController)
+                    CategoryCard("Horno", R.drawable.horno, navController)
                 }
             }
         }
@@ -98,11 +113,18 @@ fun CategoriesScreenContent(innerPadding: PaddingValues, navController: NavContr
 
 @Composable
 fun CategoryCard(titulo: String, img: Int, navController: NavController) {
-    Card(modifier = Modifier.fillMaxWidth().height(40.dp),
-        shape = RoundedCornerShape(16.dp),) {
-        Box() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp),
+        shape = RoundedCornerShape(16.dp),
+        onClick = {
+            navController.navigate("filteredCategoriesScreen/${titulo}")
+        }
+    ) {
+        Box {
             Image(
-                painter = painterResource(id = R.drawable.supermarket),
+                painter = painterResource(id = img),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -111,7 +133,7 @@ fun CategoryCard(titulo: String, img: Int, navController: NavController) {
                 text = titulo,
                 fontFamily = FontFamily(Font(R.font.muli)),
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = 24.sp,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier

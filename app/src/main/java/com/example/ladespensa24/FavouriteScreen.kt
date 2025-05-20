@@ -2,6 +2,7 @@ package com.example.ladespensa24
 
 import android.widget.Space
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +18,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,9 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -37,7 +45,6 @@ fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
-            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
             popUpTo("mainScreen") { inclusive = false }
             launchSingleTop = true
         }
@@ -66,7 +73,6 @@ fun FavouriteContent(
     navController: NavController,
     user: User
 ) {
-
     val filteredFavouriteProducts = remember {
         user.getFavouriteProducts() ?: emptyList()
     }
@@ -96,39 +102,16 @@ fun FavouriteContent(
 
                 ) {
                     val chunkedProducts =
-                        filteredFavouriteProducts.chunked(2) // Divide en grupos de 2
-                    item {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(90.dp)
-                                .background(Color(0xFF7EA24C))
-                        ) {
-                            Spacer(Modifier.size(12.dp))
-                            Text(
-                                text = "PRODUCTOS FAVORITOS",
-                                fontSize = 24.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(12.dp)
-                            )
-                            Spacer(Modifier.size(12.dp))
-                        }
-                    }
-                    items(chunkedProducts.size) { index -> // Itera por índice sobre los grupos
-                        val productPair = chunkedProducts[index] // Obtiene el par actual
+                        filteredFavouriteProducts.chunked(2)
+                    items(chunkedProducts.size) { index ->
+                        val productPair = chunkedProducts[index]
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // Primer producto
                             FavouriteProductCard(productPair[0], navController, Modifier.weight(1f))
-
-                            // Segundo producto, si existe
                             if (productPair.size > 1) {
                                 FavouriteProductCard(
                                     productPair[1],
@@ -136,7 +119,7 @@ fun FavouriteContent(
                                     Modifier.weight(1f)
                                 )
                             } else {
-                                Spacer(modifier = Modifier.weight(1f)) // Rellena el espacio
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
@@ -154,7 +137,7 @@ fun HeaderFavouriteContent() {
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .background(Color(0xFF696969))
+            .background(Color(0xFF3D3D3D))
     ) {
         Row(
             modifier = Modifier
@@ -177,6 +160,82 @@ fun HeaderFavouriteContent() {
                 R.drawable.corazon,
                 Color.White
             )
+        }
+    }
+}
+
+@Composable
+fun FavouriteProductCard(
+    product: Product,
+    navController: NavController,
+    modifier: Modifier
+) {
+    Card(
+        modifier = modifier
+            .padding(12.dp),
+        shape = RoundedCornerShape(16.dp),
+        onClick = {
+            navController.navigate("productScreen/${product.getTitle()}") {
+                launchSingleTop = true
+            }
+        },
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+    ) {
+        Column(Modifier.background(Color.White)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+            ) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    painter = painterResource(product.getImage()),
+                    contentDescription = "Imagen del producto",
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = product.getTitle(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = product.getDescription(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontSize = 12.sp
+                    )
+                }
+                Column {
+                    Text(
+                        text = if (product.getIsDiscounted())
+                            String.format("%.2f €", product.getDiscountedPrice())
+                        else
+                            String.format("%.2f €", product.getPrice()),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
+                        text = "${product.getPrice()} €",
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.LineThrough,
+                        fontSize = 9.sp
+                    )
+                }
+            }
         }
     }
 }

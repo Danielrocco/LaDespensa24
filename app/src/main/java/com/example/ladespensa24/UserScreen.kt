@@ -35,7 +35,6 @@ import androidx.navigation.NavController
 fun UserScreen(navController: NavController, viewModel: MyViewModel) {
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
-            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
             popUpTo("mainScreen") { inclusive = false }
             launchSingleTop = true
         }
@@ -72,7 +71,7 @@ fun ProfileContent(
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween // Distribuye los elementos entre el inicio y el final
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column() {
                 HeaderProfileContent(user)
@@ -97,7 +96,7 @@ fun ProfileContent(
             }
             Column {
                 LogOut("Cerrar Sesión", navController, Color(0xFFFF6A6A), Color.White, viewModel)
-                Spacer(Modifier.size(70.dp)) // Espacio debajo del último elemento
+                Spacer(Modifier.size(78.dp))
             }
         }
     }
@@ -127,16 +126,13 @@ fun HeaderProfileContent(user: User) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Nombre alineado a la izquierda
             Text(
                 text = ("Hola " + user.getName()).uppercase(),
                 fontSize = 20.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f) // toma espacio disponible
+                modifier = Modifier.weight(1f)
             )
-
-            // Dirección alineada a la derecha
             Text(
                 text = "Entrega en " + user.getAddress(),
                 color = Color(0xFFEEEEEE),
@@ -174,8 +170,8 @@ fun OptionCard(
                 .background(color = backgroundColor)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically, // Centra el contenido verticalmente
-                modifier = Modifier.fillMaxHeight() // Asegura que el Row ocupe toda la altura
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxHeight()
             ) {
                 Icon(
                     imageVector = icon,
@@ -183,7 +179,7 @@ fun OptionCard(
                     tint = Color.Black,
                     modifier = Modifier
                         .padding(10.dp)
-                        .size(24.dp) // Tamaño fijo para el ícono
+                        .size(24.dp)
                 )
                 Text(
                     text = titulo,
@@ -191,7 +187,7 @@ fun OptionCard(
                     color = textColor,
                     fontSize = 18.sp,
                     modifier = Modifier
-                        .padding(start = 8.dp) // Espaciado adicional entre el ícono y el texto
+                        .padding(start = 8.dp)
                 )
             }
         }

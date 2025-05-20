@@ -11,6 +11,9 @@ composeBom = "2024.04.01"
 navigationRuntimeKtx = "2.8.4"
 navigationCompose = "2.8.4"
 runtimeLivedata = "1.8.1"
+firebaseBom = "33.13.0"
+service = "4.4.2"
+crashlytics = "3.0.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,7 +34,13 @@ androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navig
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "service" }
+crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 

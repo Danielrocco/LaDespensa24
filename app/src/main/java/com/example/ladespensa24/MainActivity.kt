@@ -24,14 +24,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LaDespensa24Theme {
-                    MyApp()
-                }
+                MyApp()
             }
+        }
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.transparent)
         window.navigationBarColor = ContextCompat.getColor(this, android.R.color.black)
-
-        }
     }
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
@@ -40,7 +39,7 @@ fun MyApp() {
     val navController = rememberNavController()
     val viewModel: MyViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "mainScreen" + "") {
+    NavHost(navController = navController, startDestination = "mainScreen") {
         composable("mainScreen") { MainScreen(navController, viewModel) }
         composable("loginScreen") { LoginScreen(navController, viewModel) }
         composable("registerScreen") { RegisterScreen(navController, viewModel) }
@@ -51,20 +50,41 @@ fun MyApp() {
         composable("userInfoScreen") { UserInfoScreen(navController, viewModel) }
         composable("userScreen") { UserScreen(navController, viewModel) }
         composable("purchasesScreen") { PurchasesScreen(navController, viewModel) }
+
         composable(
             "productScreen/{productName}",
             arguments = listOf(navArgument("productName") { type = NavType.StringType })
         ) { backStackEntry ->
             val productName = backStackEntry.arguments?.getString("productName")
-            val product = productName?.let { getProductByName(it) }
+            val product = productName?.let { getProductByName(it, viewModel) }
             if (product != null) {
-                ProductScreen(navController, viewModel, product = product)
+                ProductScreen(navController, viewModel, product)
             }
         }
 
+        composable(
+            "filteredCategoriesScreen/{category}",
+            arguments = listOf(navArgument("category") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            FilteredCategoriesScreen(navController, viewModel, category)
+        }
+
+        composable(
+            "purchaseDetails/{purchaseId}",
+            arguments = listOf(navArgument("purchaseId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val purchaseId = backStackEntry.arguments?.getString("purchaseId")
+            val purchase = purchaseId?.let { id ->
+                viewModel.getUsuarioEnUso().getPurchases()?.find { it.getId() == id }
+            }
+            if (purchase != null) {
+                PurchaseDetailsScreen(navController, purchase)
+            }
+        }
     }
 }
 
-private fun getProductByName(productName: String): Product? {
-    return productsInStorage.find { it.getTitle() == productName }
+private fun getProductByName(productName: String, viewModel: MyViewModel): Product? {
+    return viewModel.getAllProducts().find { it.getTitle() == productName }
 }

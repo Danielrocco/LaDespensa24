@@ -51,7 +51,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 fun LoginScreen(navController: NavController, viewModel: MyViewModel) {
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
-            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
             popUpTo("mainScreen") { inclusive = false }
             launchSingleTop = true
         }
@@ -97,8 +96,11 @@ fun GoRegisterButton(navController: NavController, viewModel: MyViewModel) {
     Button(
         onClick = {
             viewModel.clearFormData()
-            navController.navigate("registerScreen") },
-        modifier = Modifier.fillMaxWidth().height(36.dp),
+            navController.navigate("registerScreen")
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(36.dp),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
             contentColor = Color.White,
@@ -117,10 +119,12 @@ fun GoRegisterButton(navController: NavController, viewModel: MyViewModel) {
     }
 }
 
-
-
 @Composable
-private fun LoginButton(isAlertEnable: Boolean, viewModel: MyViewModel, navController: NavController) {
+private fun LoginButton(
+    isAlertEnable: Boolean,
+    viewModel: MyViewModel,
+    navController: NavController
+) {
     Text(
         text = "No se encontro ese correo o la contraseña es incorrecta",
         modifier = Modifier.fillMaxWidth(),
@@ -146,7 +150,8 @@ private fun LoginButton(isAlertEnable: Boolean, viewModel: MyViewModel, navContr
             fontFamily = FontFamily(Font(R.font.muli)),
             fontWeight = FontWeight.Bold,
             color = Color.White,
-            fontSize = 18.sp)
+            fontSize = 18.sp
+        )
     }
 }
 
@@ -164,7 +169,8 @@ private fun Email(email: String, onTextFieldChanged: (String) -> Unit) {
             colorFilter = ColorFilter.tint(Color.Black)
         )
         Spacer(modifier = Modifier.size(20.dp))
-        TextField(value = email,
+        TextField(
+            value = email,
             onValueChange = { onTextFieldChanged(it) },
             modifier = Modifier.fillMaxWidth(),
             maxLines = 1,

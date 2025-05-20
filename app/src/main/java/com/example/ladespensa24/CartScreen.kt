@@ -62,7 +62,6 @@ fun CartScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
-            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
             popUpTo("mainScreen") { inclusive = false }
             launchSingleTop = true
         }
@@ -70,9 +69,10 @@ fun CartScreen(navController: NavController, viewModel: MyViewModel) {
 
     val user = viewModel.getUsuarioEnUso()
     viewModel.setEntireAmount(viewModel.getUsuarioEnUso())
-
     val isLogged by viewModel.isLogged.observeAsState(false)
-    val entireAmount by viewModel.entireAmount.observeAsState(viewModel.getUsuarioEnUso().getEntireAmountOfCart())
+    val entireAmount by viewModel.entireAmount.observeAsState(
+        viewModel.getUsuarioEnUso().getEntireAmountOfCart()
+    )
 
     Scaffold(
         content = { innerPadding ->
@@ -80,24 +80,23 @@ fun CartScreen(navController: NavController, viewModel: MyViewModel) {
         },
         floatingActionButton = {
             val isCartEmpty = entireAmount <= 0
-
             Button(
                 onClick = {
                     if (!isCartEmpty) {
                         user.buyProducts()
-                        navController.navigate("mainScreen")
+                        navController.navigate("purchasesScreen")
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFB5E354), // más oscuro si está vacío
+                    containerColor = Color(0xFFB5E354),
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFFA8A8A8)
                 ),
                 enabled = !isCartEmpty
             ) {
                 Text(
-                    text = "Comprar ($entireAmount€)",
+                    text = "Comprar (%.2f€)".format(entireAmount),
                     fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -105,15 +104,25 @@ fun CartScreen(navController: NavController, viewModel: MyViewModel) {
             }
         },
         bottomBar = {
-            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth(), navController = navController, isLogged = isLogged, viewModel = viewModel)
+            AppFooter(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth(),
+                navController = navController,
+                isLogged = isLogged,
+                viewModel = viewModel
+            )
         }
     )
 }
 
-
-
 @Composable
-private fun CartScreenContent(innerPadding: PaddingValues, user: User, navController: NavController, viewModel: MyViewModel) {
+private fun CartScreenContent(
+    innerPadding: PaddingValues,
+    user: User,
+    navController: NavController,
+    viewModel: MyViewModel
+) {
     Box(
         Modifier
             .fillMaxSize()
@@ -128,7 +137,7 @@ private fun CartScreenContent(innerPadding: PaddingValues, user: User, navContro
             MainCart(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(bottom = 70.dp), // solo padding inferior
+                    .padding(bottom = 70.dp),
                 user = user,
                 navController = navController,
                 viewModel = viewModel
@@ -138,7 +147,12 @@ private fun CartScreenContent(innerPadding: PaddingValues, user: User, navContro
 }
 
 @Composable
-private fun MainCart(modifier: Modifier, user: User, navController: NavController, viewModel: MyViewModel) {
+private fun MainCart(
+    modifier: Modifier,
+    user: User,
+    navController: NavController,
+    viewModel: MyViewModel
+) {
     val cartProducts = user.getCart() ?: emptyList()
 
     if (cartProducts.isEmpty()) {
@@ -162,10 +176,7 @@ private fun MainCart(modifier: Modifier, user: User, navController: NavControlle
             LazyColumnCartProducts(user = user, navController = navController, viewModel)
         }
     }
-
 }
-
-
 
 @Composable
 fun HeaderCartContent() {
@@ -173,7 +184,7 @@ fun HeaderCartContent() {
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .background(Color(0xFF696969))
+            .background(Color(0xFF3D3D3D))
     ) {
         Row(
             modifier = Modifier
@@ -201,7 +212,11 @@ fun HeaderCartContent() {
 }
 
 @Composable
-private fun LazyColumnCartProducts(user: User, navController: NavController, viewModel: MyViewModel) {
+private fun LazyColumnCartProducts(
+    user: User,
+    navController: NavController,
+    viewModel: MyViewModel
+) {
     val productsInHisCart = user.getCart()
 
     LazyColumn(
@@ -222,7 +237,6 @@ private fun LazyColumnCartProducts(user: User, navController: NavController, vie
         }
     }
 }
-
 
 @Composable
 fun CartProductCard(
@@ -255,7 +269,6 @@ fun CartProductCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Column(Modifier.background(Color.White)) {
-            // Imagen
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -271,7 +284,6 @@ fun CartProductCard(
                 )
             }
 
-            // Título y descripción
             Row(
                 modifier = Modifier
                     .padding(10.dp)
@@ -279,7 +291,7 @@ fun CartProductCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
-                    modifier = Modifier.weight(1f) // Esta empuja a la otra hacia la derecha
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = inCartProduct.getTitle(),
@@ -295,7 +307,7 @@ fun CartProductCard(
                 }
 
                 Column(
-                    horizontalAlignment = Alignment.End, // Alinea el contenido dentro de la columna
+                    horizontalAlignment = Alignment.End,
                 ) {
                     Text(
                         text = String.format("%.2f €", precioUnitario),
@@ -312,8 +324,6 @@ fun CartProductCard(
                     )
                 }
             }
-
-            // Contador de unidades
             Row(modifier = Modifier.padding(10.dp)) {
                 Text(
                     text = "Unidades: $unidadesActuales",

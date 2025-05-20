@@ -53,7 +53,6 @@ fun RegisterScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
         navController.navigate("mainScreen") {
-            // Limpia la pila para evitar volver atrás otra vez a esta pantalla
             popUpTo("mainScreen") { inclusive = false }
             launchSingleTop = true
         }
@@ -103,7 +102,6 @@ private fun RegisterContent(modifier: Modifier, viewModel: MyViewModel, navContr
             isValid = viewModel.isAddressValid.observeAsState(false).value
         )
 
-        // Correo con validación
         TextFieldRegister(
             label = "Correo",
             value = email,
@@ -112,7 +110,6 @@ private fun RegisterContent(modifier: Modifier, viewModel: MyViewModel, navContr
             isValid = viewModel.isEmailValid.observeAsState(false).value
         )
 
-        // Tarjeta con validación
         TextFieldRegister(
             label = "Tarjeta (16 digit)",
             value = payCard,
@@ -121,7 +118,6 @@ private fun RegisterContent(modifier: Modifier, viewModel: MyViewModel, navContr
             isValid = viewModel.isCardValid.observeAsState(false).value
         )
 
-        // Contraseña con validación
         TextFieldRegister(
             label = "Contraseña (Min 8 Caract)",
             value = passwd,
@@ -183,7 +179,7 @@ fun TextFieldRegister(
     onValueChange: (String) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false,
-    isValid: Boolean = true // Parámetro para controlar la validación
+    isValid: Boolean = true
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 

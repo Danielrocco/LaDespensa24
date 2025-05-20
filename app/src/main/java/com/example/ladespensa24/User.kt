@@ -17,7 +17,7 @@ open class User(
     private var cartProducts: MutableList<InCartProduct>?,
     private var favouriteProducts: MutableList<Product>?,
     private var purchases: MutableList<Purchase>?,
-    ) {
+) {
 
     fun getName(): String {
         return name
@@ -80,11 +80,11 @@ open class User(
     fun setPayCard(value: String) {
         payCard = value
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun buyProducts() {
         val localDate = LocalDate.now()
-
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Por ejemplo: "16/05/2025"
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
         val formattedDate = localDate.format(formatter)
 
         val purchasedList = mutableListOf<InCartProduct>()
@@ -106,22 +106,22 @@ open class User(
             )
         }
 
-        // ✅ Crear nueva Purchase con fecha formateada (String)
+        // ✅ Obtener número de tarjeta del usuario
+        val cardNumber = getPayCard()
+
         val newPurchase = Purchase(
             inCartProducts = purchasedList,
-            date = formattedDate // <- Ahora es String
+            date = formattedDate,
+            cardNumber = cardNumber // ← aquí lo usas
         )
 
-        // Agregar la compra
         if (purchases == null) {
             purchases = mutableListOf()
         }
         (purchases as MutableList<Purchase>).add(newPurchase)
 
-        // Limpiar carrito
         cartProducts?.clear()
     }
-
 
     fun removeFromKart(productTitle: String) {
         cartProducts?.removeIf { it.getTitle() == productTitle }
@@ -148,7 +148,7 @@ open class User(
         var existentProduct: InCartProduct? = null
 
         for (item in cartProducts.orEmpty()) {
-            if (item.getTitle() == product.getTitle() ) {
+            if (item.getTitle() == product.getTitle()) {
                 existentProduct = item
                 break
             }

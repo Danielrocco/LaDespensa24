@@ -10,6 +10,54 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 
 class MyViewModel : ViewModel() {
+    private val productsInStorage = listOf(
+        Product(
+            "Pan",
+            "1 barra de pan",
+            12.02,
+            ProductCategories.Horno,
+            R.drawable.pan,
+            true,
+            true,
+            50,
+            false
+        ),
+        Product(
+            "Manzana",
+            "180g ",
+            12.02,
+            ProductCategories.Frutería,
+            R.drawable.manzana,
+            true,
+            false,
+            0,
+            true
+        ),
+        Product(
+            "Lechuga",
+            "200g",
+            12.02,
+            ProductCategories.Frutería,
+            R.drawable.lechuga,
+            true,
+            true,
+            60,
+            false
+        ),
+        Product(
+            "Carne",
+            "200g",
+            12.02,
+            ProductCategories.Carnicería,
+            R.drawable.carne,
+            true,
+            true,
+            60,
+            false
+        )
+    )
+
+    fun getAllProducts(): List<Product> = productsInStorage
 
     private val userDefault: User = User(
         "",
@@ -132,8 +180,6 @@ class MyViewModel : ViewModel() {
             favouriteProducts = mutableListOf(),
             purchases = mutableListOf()
         )
-
-        // Aquí podrías validar que no exista ya un usuario con ese correo
         if (users.none { it.getEmail() == newUser.getEmail() }) {
             _isLogged.value = true
             users.add(newUser)
@@ -147,7 +193,14 @@ class MyViewModel : ViewModel() {
         }
     }
 
-    fun onRegisterDataChanged(name: String, surname: String, email: String, passwd: String, address: String, payCard: String) {
+    fun onRegisterDataChanged(
+        name: String,
+        surname: String,
+        email: String,
+        passwd: String,
+        address: String,
+        payCard: String
+    ) {
         this._name.value = name
         this._surname.value = surname
         this._email.value = email
@@ -155,12 +208,12 @@ class MyViewModel : ViewModel() {
         this._address.value = address
         this._payCard.value = payCard
 
-        // Verificamos si el correo es válido y si ya existe
         isNameValid.value = name.isNotBlank()
         isSurnameValid.value = surname.isNotBlank()
         isAddressValid.value = address.isNotBlank()
-        isEmailValid.value = isValidEmail(email) && !checkIfEmailExists(email)  // Solo válido si no existe
-        isEmailExist.value = checkIfEmailExists(email)  // Estado del correo ya existente
+        isEmailValid.value =
+            isValidEmail(email) && !checkIfEmailExists(email)
+        isEmailExist.value = checkIfEmailExists(email)
         isPasswordValid.value = isValidPassword(passwd)
         isCardValid.value = isValidCard(payCard)
     }
@@ -177,13 +230,11 @@ class MyViewModel : ViewModel() {
         val emailValue = email.value.orEmpty()
         val passwdValue = passwd.value.orEmpty()
 
-        // Validación de campos vacíos
         if (emailValue.isBlank() || passwdValue.isBlank()) {
             _isAlertVisible.value = true
             return
         }
 
-        // Buscar usuario
         val user = users.find { it.getEmail() == emailValue }
 
         if (user != null && user.getPasswd() == passwdValue) {

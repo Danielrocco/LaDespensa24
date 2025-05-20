@@ -1,6 +1,5 @@
 package com.example.ladespensa24
 
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,13 +62,24 @@ fun MainScreen(navController: NavController, viewModel: MyViewModel) {
     Scaffold(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Spacer(modifier = Modifier.height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()))
+                Spacer(
+                    modifier = Modifier.height(
+                        WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                    )
+                )
                 AppHeader(navController, Color.White)
             }
         }, content = { innerPadding ->
             MainScreenContent(innerPadding, navController, viewModel, isLogged)
         }, bottomBar = {
-            AppFooter(modifier = Modifier.navigationBarsPadding().fillMaxWidth(), navController, viewModel, isLogged)
+            AppFooter(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth(),
+                navController,
+                viewModel,
+                isLogged
+            )
         }
     )
 }
@@ -95,7 +107,6 @@ fun AppFooter(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Casa
             NormalImage(
                 Modifier
                     .height(24.dp)
@@ -108,8 +119,6 @@ fun AppFooter(
                 R.drawable.casa,
                 if (selectedIcon == "mainScreen") Color.White else Color(0xFFD2D2D2)
             )
-
-            // Menú
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = null,
@@ -123,8 +132,6 @@ fun AppFooter(
                         viewModel.selectIcon("categoriesScreen")
                     }
             )
-
-            // Carrito
             NormalImage(
                 Modifier
                     .height(24.dp)
@@ -140,10 +147,8 @@ fun AppFooter(
                         }
                     },
                 R.drawable.carrito,
-                if (selectedIcon == "favouriteScreen") Color.White else Color(0xFFD2D2D2)
+                if (selectedIcon == "cartScreen") Color.White else Color(0xFFD2D2D2)
             )
-
-            // Corazón
             NormalImage(
                 Modifier
                     .height(24.dp)
@@ -161,8 +166,6 @@ fun AppFooter(
                 R.drawable.corazon,
                 if (selectedIcon == "favouriteScreen") Color.White else Color(0xFFD2D2D2)
             )
-
-            // Persona
             NormalImage(
                 Modifier
                     .height(24.dp)
@@ -185,7 +188,12 @@ fun AppFooter(
 }
 
 @Composable
-fun MainScreenContent(paddingValues: PaddingValues, navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
+fun MainScreenContent(
+    paddingValues: PaddingValues,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
     Column {
         Box(
             Modifier
@@ -195,9 +203,11 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
         ) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
                         Image(
                             painter = painterResource(id = R.drawable.supermarket),
                             contentDescription = null,
@@ -216,6 +226,12 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                                 .padding(16.dp)
                         )
                     }
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(10.dp)
+                            .background(Color(0xFF3D3D3D))
+                    )
                 }
                 item {
                     Box(
@@ -223,14 +239,14 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                             .fillMaxWidth()
                             .height(30.dp)
                     ) {
-                        Row (Modifier.fillMaxSize()) {
+                        Row(Modifier.fillMaxSize()) {
                             Box(
                                 modifier = Modifier
                                     .weight(2f)
                                     .height(30.dp)
                                     .background(Color(0xffb5e354))
                                     .padding(horizontal = 10.dp)
-                            ){
+                            ) {
                                 Text(
                                     text = stringResource(id = R.string.TrendingFlagES),
                                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -245,7 +261,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                                     .weight(1f)
                                     .height(30.dp)
                                     .padding(horizontal = 10.dp)
-                            ){
+                            ) {
                                 Text(
                                     text = "/ / / / / / / / / / / / / / /",
                                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -262,17 +278,21 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                     Spacer(modifier = Modifier.size(10.dp))
                     FeaturedLazyRow(navController, viewModel, isLogged)
                 }
-
                 item {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
                     ) {
-                        Row (Modifier.fillMaxSize(),
+                        Row(
+                            Modifier.fillMaxSize(),
                             horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically) {
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 8.dp),
                                 text = "/ / / / / /",
                                 fontFamily = FontFamily(Font(R.font.muli)),
                                 color = Color.Gray,
@@ -280,7 +300,12 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                                 textAlign = TextAlign.Center,
                                 fontWeight = FontWeight.Bold,
                             )
-                            Box(Modifier.weight(1.5f).fillMaxHeight().background(Color(0xff6fd5e9))) {
+                            Box(
+                                Modifier
+                                    .weight(1.5f)
+                                    .fillMaxHeight()
+                                    .background(Color(0xff6fd5e9))
+                            ) {
                                 Text(
                                     text = stringResource(id = R.string.NewsFlagES),
                                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -292,7 +317,9 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                                 )
                             }
                             Text(
-                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 8.dp),
                                 text = "/ / / / / /",
                                 fontFamily = FontFamily(Font(R.font.muli)),
                                 color = Color.Gray,
@@ -305,7 +332,6 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                     }
                     Spacer(modifier = Modifier.size(12.dp))
                     NewsLazyRow(navController, viewModel, isLogged)
-
                 }
                 item {
                     Box(
@@ -313,13 +339,13 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                             .fillMaxWidth()
                             .height(30.dp)
                     ) {
-                        Row (Modifier.fillMaxSize()) {
+                        Row(Modifier.fillMaxSize()) {
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(30.dp)
                                     .padding(horizontal = 10.dp)
-                            ){
+                            ) {
                                 Text(
                                     text = "/ / / / / / / / / / / / / / / / / / /",
                                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -335,7 +361,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
                                     .height(30.dp)
                                     .background(Color.Red)
                                     .padding(horizontal = 10.dp)
-                            ){
+                            ) {
                                 Text(
                                     text = stringResource(id = R.string.DiscountedFlagES),
                                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -360,7 +386,7 @@ fun MainScreenContent(paddingValues: PaddingValues, navController: NavController
 @Composable
 fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val filteredNewProducts = remember {
-        productsInStorage.filter { it.getIsNew() }
+        viewModel.getAllProducts().filter { it.getIsNew() }
     }
 
     LazyRow(
@@ -375,7 +401,7 @@ fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: 
 @Composable
 fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val filteredDiscountedProducts = remember {
-        productsInStorage.filter { it.getIsDiscounted() }
+        viewModel.getAllProducts().filter { it.getIsDiscounted() }
     }
 
     LazyRow(
@@ -391,7 +417,7 @@ fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLo
 fun FeaturedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
 
     val filteredTrendingProducts = remember {
-        productsInStorage.filter { it.getFeatured() }
+        viewModel.getAllProducts().filter { it.getFeatured() }
     }
 
     LazyRow(
@@ -460,17 +486,13 @@ fun AppHeader(navController: NavController, color: Color) {
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Logo a la izquierda
         NormalImage(
             modifier = Modifier
-                .size(56.dp), // Altura estándar
+                .size(56.dp),
             image = R.drawable.logo,
-            tint = color // Usa el color original del logo
+            tint = color
         )
-
-        Spacer(modifier = Modifier.size(12.dp)) // Espacio entre logo y botón
-
-        // Botón que ocupa el resto del espacio
+        Spacer(modifier = Modifier.size(12.dp))
         SearchBarButton(
             navController = navController,
             modifier = Modifier.weight(1f)
@@ -478,4 +500,120 @@ fun AppHeader(navController: NavController, color: Color) {
     }
 
     Spacer(modifier = Modifier.height(18.dp))
+}
+
+@Composable
+fun NewProductCard(
+    product: Product,
+    navController: NavController,
+    viewModel: MyViewModel,
+    isLogged: Boolean
+) {
+    Card(
+        modifier = Modifier
+            .padding(12.dp)
+            .width(260.dp),
+        onClick = {
+            navController.navigate("productScreen/${product.getTitle()}") {
+                launchSingleTop = true
+            }
+        },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+    ) {
+        Column(Modifier.background(Color.White)) {
+            Text(
+                text = "NOVEDAD",
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xff6fd5e9))
+                    .padding(4.dp),
+                fontFamily = FontFamily(Font(R.font.muli)),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            Image(
+                painter = painterResource(id = product.getImage()),
+                contentDescription = "Imagen del producto",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = product.getTitle(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = product.getDescription(),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontSize = 12.sp
+                    )
+                }
+                Column {
+                    Text(
+                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice()
+                            .toString() + "€" else {
+                            product.getPrice().toString() + " €"
+                        }),
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
+                        text = product.getPrice().toString() + " €",
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = TextDecoration.LineThrough,
+                        fontSize = 9.sp
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Button(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(130.dp)
+                        .padding(8.dp),
+                    onClick = {
+                        if (isLogged) {
+                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            navController.navigate("cartScreen")
+                        } else navController.navigate("loginScreen")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White,
+                        containerColor = Color(0xffb5e354)
+                    ),
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        "Añadir a la cesta",
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        fontFamily = FontFamily(Font(R.font.muli)),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+        }
+    }
 }
