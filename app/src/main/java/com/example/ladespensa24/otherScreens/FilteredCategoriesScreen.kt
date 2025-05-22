@@ -1,4 +1,4 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.otherScreens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -9,28 +9,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +35,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.R
+import com.example.ladespensa24.managers.CloudStorageManager
+import com.example.ladespensa24.models.User
+import com.example.ladespensa24.userScreens.FavouriteProductCard
+import com.example.ladespensa24.viewmodel.MyViewModel
 import kotlin.collections.chunked
 
 
@@ -80,10 +83,10 @@ fun FilteredCategoriesContent(
     viewModel: MyViewModel,
     selectedCategory: String
 ) {
-
-    val allProducts = viewModel.getAllProducts()
+    val products by viewModel.products.collectAsState()
+    val cloudStorageManager = remember { CloudStorageManager() }
     val filteredProducts = remember(selectedCategory) {
-        allProducts.filter { it.getCategory().name.equals(selectedCategory, ignoreCase = true) }
+        products.filter { it.getCategory().name.equals(selectedCategory, ignoreCase = true) }
     }
 
     Column {
@@ -123,15 +126,34 @@ fun FilteredCategoriesContent(
 
                     items(chunkedProducts.size) { index ->
                         val productPair = chunkedProducts[index]
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            FavouriteProductCard(productPair[0], navController, Modifier.weight(1f))
+                            // Imagen para primer producto
+                            val imageUrl0 by produceState<String?>(initialValue = null, productPair[0]) {
+                                cloudStorageManager.getProductImage(productPair[0]) { value = it }
+                            }
+                            FavouriteProductCard(
+                                product = productPair[0],
+                                navController = navController,
+                                modifier = Modifier.weight(1f),
+                                imageUrl = imageUrl0
+                            )
+
                             if (productPair.size > 1) {
-                                FavouriteProductCard(productPair[1], navController, Modifier.weight(1f))
+                                val imageUrl1 by produceState<String?>(initialValue = null, productPair[1]) {
+                                    cloudStorageManager.getProductImage(productPair[1]) { value = it }
+                                }
+                                FavouriteProductCard(
+                                    product = productPair[1],
+                                    navController = navController,
+                                    modifier = Modifier.weight(1f),
+                                    imageUrl = imageUrl1
+                                )
                             } else {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
@@ -145,10 +167,10 @@ fun FilteredCategoriesContent(
 
 @Composable
 fun FilteredCategoriesHeader(selectedCategory: String) {
-    val imageResId = when (selectedCategory.lowercase()) {
-        "frutería" -> R.drawable.fruteria
-        "carnicería" -> R.drawable.carniceria
-        "horno" -> R.drawable.horno
+    val imageResId = when (selectedCategory.uppercase()) {
+        "FRUTERÍA" -> R.drawable.fruteria
+        "CARNICERÍA" -> R.drawable.carniceria
+        "HORNO" -> R.drawable.horno
         else -> R.drawable.supermarket
     }
     Box(

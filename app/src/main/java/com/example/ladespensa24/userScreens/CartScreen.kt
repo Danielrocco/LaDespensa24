@@ -1,10 +1,8 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.userScreens
 
 import android.os.Build
-import android.widget.Space
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -36,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -43,10 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -55,14 +50,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.NormalImage
+import com.example.ladespensa24.R
+import com.example.ladespensa24.models.InCartProduct
+import com.example.ladespensa24.models.User
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CartScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
-        navController.navigate("mainScreen") {
-            popUpTo("mainScreen") { inclusive = false }
+        navController.navigate("homeScreen") {
+            popUpTo("homeScreen") { inclusive = false }
             launchSingleTop = true
         }
     }
@@ -218,14 +220,18 @@ private fun LazyColumnCartProducts(
     viewModel: MyViewModel
 ) {
     val productsInHisCart = user.getCart()
+    val imageUrls by viewModel.imageUrls.collectAsState()
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (productsInHisCart != null) {
             items(productsInHisCart.size) { index ->
+                val product = productsInHisCart[index]
+                val imageUrl = imageUrls[product.id]
                 CartProductCard(
                     inCartProduct = productsInHisCart[index],
+                    imageUrl,
                     navController = navController,
                     user,
                     viewModel
@@ -241,6 +247,7 @@ private fun LazyColumnCartProducts(
 @Composable
 fun CartProductCard(
     inCartProduct: InCartProduct,
+    imageUrl: String?,
     navController: NavController,
     user: User,
     viewModel: MyViewModel
@@ -274,13 +281,13 @@ fun CartProductCard(
                     .fillMaxWidth()
                     .height(120.dp),
             ) {
-                Image(
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Imagen del producto",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(),
-                    painter = painterResource(inCartProduct.getImage()),
-                    contentDescription = "Imagen del producto",
-                    contentScale = ContentScale.Crop
+                        .fillMaxHeight()
                 )
             }
 

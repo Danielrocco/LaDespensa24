@@ -16,11 +16,28 @@ import com.example.ladespensa24.ui.theme.LaDespensa24Theme
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.ladespensa24.authScreens.LoginScreen
+import com.example.ladespensa24.authScreens.RegisterScreen
+import com.example.ladespensa24.models.Product
+import com.example.ladespensa24.otherScreens.CategoriesScreen
+import com.example.ladespensa24.otherScreens.FilteredCategoriesScreen
+import com.example.ladespensa24.otherScreens.ProductScreen
+import com.example.ladespensa24.otherScreens.SearchScreen
+import com.example.ladespensa24.userScreens.CartScreen
+import com.example.ladespensa24.userScreens.FavouriteScreen
+import com.example.ladespensa24.userScreens.PurchaseTicketScreen
+import com.example.ladespensa24.userScreens.PurchasesScreen
+import com.example.ladespensa24.userScreens.UserInfoScreen
+import com.example.ladespensa24.userScreens.UserScreen
+import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+
         enableEdgeToEdge()
         setContent {
             LaDespensa24Theme {
@@ -39,8 +56,8 @@ fun MyApp() {
     val navController = rememberNavController()
     val viewModel: MyViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = "mainScreen") {
-        composable("mainScreen") { MainScreen(navController, viewModel) }
+    NavHost(navController = navController, startDestination = "homeScreen") {
+        composable("homeScreen") { HomeScreen(navController, viewModel) }
         composable("loginScreen") { LoginScreen(navController, viewModel) }
         composable("registerScreen") { RegisterScreen(navController, viewModel) }
         composable("favouriteScreen") { FavouriteScreen(navController, viewModel) }
@@ -79,12 +96,12 @@ fun MyApp() {
                 viewModel.getUsuarioEnUso().getPurchases()?.find { it.getId() == id }
             }
             if (purchase != null) {
-                PurchaseDetailsScreen(navController, purchase)
+                PurchaseTicketScreen(navController, purchase)
             }
         }
     }
 }
 
 private fun getProductByName(productName: String, viewModel: MyViewModel): Product? {
-    return viewModel.getAllProducts().find { it.getTitle() == productName }
+    return viewModel.products.value.find { it.getTitle() == productName }
 }

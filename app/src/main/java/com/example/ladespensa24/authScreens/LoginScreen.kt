@@ -1,4 +1,4 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.authScreens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -46,12 +46,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import com.example.ladespensa24.NormalImage
+import com.example.ladespensa24.R
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: MyViewModel) {
     BackHandler(enabled = true) {
-        navController.navigate("mainScreen") {
-            popUpTo("mainScreen") { inclusive = false }
+        navController.navigate("homeScreen") {
+            popUpTo("homeScreen") { inclusive = false }
             launchSingleTop = true
         }
     }

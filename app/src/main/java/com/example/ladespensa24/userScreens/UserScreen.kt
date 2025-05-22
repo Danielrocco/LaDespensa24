@@ -1,4 +1,4 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.userScreens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -22,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -30,12 +27,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.R
+import com.example.ladespensa24.models.User
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
 fun UserScreen(navController: NavController, viewModel: MyViewModel) {
     BackHandler(enabled = true) {
-        navController.navigate("mainScreen") {
-            popUpTo("mainScreen") { inclusive = false }
+        navController.navigate("homeScreen") {
+            popUpTo("homeScreen") { inclusive = false }
             launchSingleTop = true
         }
     }

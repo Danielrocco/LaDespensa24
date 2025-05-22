@@ -1,6 +1,6 @@
 package com.example.ladespensa24
 
-import androidx.activity.compose.BackHandler
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,14 +34,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,13 +50,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.ladespensa24.models.Product
+import com.example.ladespensa24.models.ProductCard
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
-fun MainScreen(navController: NavController, viewModel: MyViewModel) {
+fun HomeScreen(navController: NavController, viewModel: MyViewModel) {
     val isLogged by viewModel.isLogged.observeAsState(false)
 
     Scaffold(
@@ -70,7 +73,7 @@ fun MainScreen(navController: NavController, viewModel: MyViewModel) {
                 AppHeader(navController, Color.White)
             }
         }, content = { innerPadding ->
-            MainScreenContent(innerPadding, navController, viewModel, isLogged)
+            HomeScreenContent(innerPadding, navController, viewModel, isLogged)
         }, bottomBar = {
             AppFooter(
                 modifier = Modifier
@@ -113,11 +116,11 @@ fun AppFooter(
                     .weight(1f)
                     .clickable {
                         navController.popBackStack()
-                        navController.navigate("mainScreen")
-                        viewModel.selectIcon("mainScreen")
+                        navController.navigate("homeScreen")
+                        viewModel.selectIcon("homeScreen")
                     },
                 R.drawable.casa,
-                if (selectedIcon == "mainScreen") Color.White else Color(0xFFD2D2D2)
+                if (selectedIcon == "homeScreen") Color.White else Color(0xFFD2D2D2)
             )
             Icon(
                 imageVector = Icons.Default.Menu,
@@ -188,7 +191,7 @@ fun AppFooter(
 }
 
 @Composable
-fun MainScreenContent(
+fun HomeScreenContent(
     paddingValues: PaddingValues,
     navController: NavController,
     viewModel: MyViewModel,
@@ -384,47 +387,51 @@ fun MainScreenContent(
 }
 
 @Composable
-fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
-    val filteredNewProducts = remember {
-        viewModel.getAllProducts().filter { it.getIsNew() }
-    }
+fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
+    val products by viewModel.products.collectAsState()
+    val imageUrls by viewModel.imageUrls.collectAsState()
+    val discountedProducts = products.filter { it.getIsDiscounted() }
 
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(filteredNewProducts.size) { index ->
-            NewProductCard(filteredNewProducts[index], navController, viewModel, isLogged)
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(discountedProducts.size) { index ->
+            val product = discountedProducts[index]
+            val imageUrl = imageUrls[product.id]
+            ProductCard(product, imageUrl, navController, isLogged, viewModel)
         }
     }
 }
 
 @Composable
-fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
-    val filteredDiscountedProducts = remember {
-        viewModel.getAllProducts().filter { it.getIsDiscounted() }
-    }
+fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
+    val products by viewModel.products.collectAsState()
+    val imageUrls by viewModel.imageUrls.collectAsState()
+    val newProducts = products.filter { it.getIsNew() }
 
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(filteredDiscountedProducts.size) { index ->
-            ProductCard(filteredDiscountedProducts[index], navController, viewModel, isLogged)
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(newProducts.size) { index ->
+            val product = newProducts[index]
+            val imageUrl = imageUrls[product.id]
+            NewProductCard(product, imageUrl, navController, isLogged, viewModel)
         }
     }
 }
 
 @Composable
 fun FeaturedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
+    val products by viewModel.products.collectAsState()
+    val imageUrls by viewModel.imageUrls.collectAsState()
+    val featuredProducts = products.filter { it.getIsFeatured() }
 
-    val filteredTrendingProducts = remember {
-        viewModel.getAllProducts().filter { it.getFeatured() }
+    LaunchedEffect(products) {
+        Log.d("FEATURED_PRODUCTS", "Cantidad total: ${products.size}")
+        Log.d("FEATURED_PRODUCTS", "Featured: ${products.count { it.getIsFeatured() }}")
     }
 
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(filteredTrendingProducts.size) { index ->
-            ProductCard(filteredTrendingProducts[index], navController, viewModel, isLogged)
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(featuredProducts.size) { index ->
+            val product = featuredProducts[index]
+            val imageUrl = imageUrls[product.id]
+            ProductCard(product, imageUrl, navController, isLogged, viewModel)
         }
     }
 }
@@ -505,9 +512,10 @@ fun AppHeader(navController: NavController, color: Color) {
 @Composable
 fun NewProductCard(
     product: Product,
+    imageUrl: String?,
     navController: NavController,
-    viewModel: MyViewModel,
-    isLogged: Boolean
+    isLogged: Boolean,
+    viewModel: MyViewModel
 ) {
     Card(
         modifier = Modifier
@@ -534,8 +542,8 @@ fun NewProductCard(
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
-            Image(
-                painter = painterResource(id = product.getImage()),
+            AsyncImage(
+                model = imageUrl,
                 contentDescription = "Imagen del producto",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -564,10 +572,10 @@ fun NewProductCard(
                 }
                 Column {
                     Text(
-                        text = (if (product.getIsDiscounted()) product.getDiscountedPrice()
-                            .toString() + "€" else {
-                            product.getPrice().toString() + " €"
-                        }),
+                        text = if (product.getIsDiscounted())
+                            String.format("%.2f €", product.getDiscountedPrice())
+                        else
+                            String.format("%.2f €", product.getPrice()),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
@@ -583,8 +591,7 @@ fun NewProductCard(
                 }
             }
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
@@ -596,7 +603,9 @@ fun NewProductCard(
                         if (isLogged) {
                             viewModel.getUsuarioEnUso().addToCart(product, 1)
                             navController.navigate("cartScreen")
-                        } else navController.navigate("loginScreen")
+                        } else {
+                            navController.navigate("loginScreen")
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.White,

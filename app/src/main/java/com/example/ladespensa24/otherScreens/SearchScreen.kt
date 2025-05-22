@@ -1,6 +1,5 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.otherScreens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,13 +27,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -55,7 +52,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-
+import coil.compose.AsyncImage
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.R
+import com.example.ladespensa24.models.Product
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
 fun SearchScreen(navController: NavController, viewModel: MyViewModel) {
@@ -78,6 +79,7 @@ fun SearchScreen(navController: NavController, viewModel: MyViewModel) {
         }
     )
 }
+
 @Composable
 private fun SearchScreenContent(
     innerPadding: PaddingValues,
@@ -93,10 +95,10 @@ private fun SearchScreenContent(
     }
 
     var query by remember { mutableStateOf("") }
-    val filteredProducts by remember(query) {
-        derivedStateOf {
-            viewModel.getAllProducts().filter { it.getTitle().contains(query, ignoreCase = true) }
-        }
+    val products by viewModel.products.collectAsState()
+
+    val filteredProducts = remember(query, products) {
+        products.filter { it.getTitle().contains(query, ignoreCase = true) }
     }
 
     Box(
@@ -202,26 +204,32 @@ private fun LazyFilteredColumn(
     viewModel: MyViewModel,
     isLogged: Boolean
 ) {
+    val imageUrls by viewModel.imageUrls.collectAsState()
+
     LazyColumn(
-        modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(filteredProducts.size) { index ->
+            val product = filteredProducts[index]
+            val imageUrl = imageUrls[product.id]
             FilteredProductCard(
-                product = filteredProducts[index],
-                navController,
-                viewModel,
-                isLogged
+                product = product,
+                imageUrl = imageUrl,
+                navController = navController,
+                isLogged = isLogged,
+                viewModel = viewModel
             )
         }
     }
 }
-
 @Composable
 fun FilteredProductCard(
     product: Product,
+    imageUrl: String?,
     navController: NavController,
-    viewModel: MyViewModel,
-    isLogged: Boolean
+    isLogged: Boolean,
+    viewModel: MyViewModel
 ) {
     Card(
         modifier = Modifier
@@ -234,7 +242,6 @@ fun FilteredProductCard(
             }
         },
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-
     ) {
         Column(Modifier.background(Color.White)) {
             Box(
@@ -242,13 +249,13 @@ fun FilteredProductCard(
                     .fillMaxWidth()
                     .height(120.dp),
             ) {
-                Image(
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Imagen del producto",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(),
-                    painter = painterResource(product.getImage()),
-                    contentDescription = "Imagen del producto",
-                    contentScale = ContentScale.Crop
+                        .fillMaxHeight()
                 )
             }
             Row(

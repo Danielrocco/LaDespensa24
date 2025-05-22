@@ -1,4 +1,4 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.otherScreens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -36,13 +36,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.AppHeader
+import com.example.ladespensa24.R
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
 fun CategoriesScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
-        navController.navigate("mainScreen") {
-            popUpTo("mainScreen") { inclusive = false }
+        navController.navigate("homeScreen") {
+            popUpTo("homeScreen") { inclusive = false }
             launchSingleTop = true
         }
     }
@@ -98,13 +102,13 @@ fun CategoriesScreenContent(innerPadding: PaddingValues, navController: NavContr
                     )
                 }
                 item {
-                    CategoryCard("Frutería", R.drawable.fruteria, navController)
+                    CategoryCard("FRUTERÍA", R.drawable.fruteria, navController)
                 }
                 item {
-                    CategoryCard("Carnicería", R.drawable.carniceria, navController)
+                    CategoryCard("CARNICERÍA", R.drawable.carniceria, navController)
                 }
                 item {
-                    CategoryCard("Horno", R.drawable.horno, navController)
+                    CategoryCard("HORNO", R.drawable.horno, navController)
                 }
             }
         }

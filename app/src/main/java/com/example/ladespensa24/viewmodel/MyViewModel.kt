@@ -1,4 +1,4 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.viewmodel
 
 import android.util.Patterns
 import androidx.compose.runtime.State
@@ -7,57 +7,49 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.ladespensa24.models.InCartProduct
+import com.example.ladespensa24.models.Product
+import com.example.ladespensa24.models.ProductCategories
+import com.example.ladespensa24.models.Purchase
+import com.example.ladespensa24.R
+import com.example.ladespensa24.managers.CloudStorageManager
+import com.example.ladespensa24.managers.FirestoreManager
+import com.example.ladespensa24.models.User
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class MyViewModel : ViewModel() {
-    private val productsInStorage = listOf(
-        Product(
-            "Pan",
-            "1 barra de pan",
-            12.02,
-            ProductCategories.Horno,
-            R.drawable.pan,
-            true,
-            true,
-            50,
-            false
-        ),
-        Product(
-            "Manzana",
-            "180g ",
-            12.02,
-            ProductCategories.Frutería,
-            R.drawable.manzana,
-            true,
-            false,
-            0,
-            true
-        ),
-        Product(
-            "Lechuga",
-            "200g",
-            12.02,
-            ProductCategories.Frutería,
-            R.drawable.lechuga,
-            true,
-            true,
-            60,
-            false
-        ),
-        Product(
-            "Carne",
-            "200g",
-            12.02,
-            ProductCategories.Carnicería,
-            R.drawable.carne,
-            true,
-            true,
-            60,
-            false
-        )
-    )
 
-    fun getAllProducts(): List<Product> = productsInStorage
+    private val firestoreManager = FirestoreManager()
+    private val cloudStorageManager = CloudStorageManager()
+
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
+    val products: StateFlow<List<Product>> = _products
+
+    private val _imageUrls = MutableStateFlow<Map<String, String?>>(emptyMap())
+    val imageUrls: StateFlow<Map<String, String?>> = _imageUrls
+
+    init {
+        viewModelScope.launch {
+            firestoreManager.getAllProductsFlow().collect { productList ->
+                _products.value = productList
+
+                productList.forEach { product ->
+                    cloudStorageManager.getProductImage(product) { url ->
+                        _imageUrls.update { currentMap ->
+                            currentMap + (product.id to url)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private val userDefault: User = User(
         "",
@@ -71,9 +63,58 @@ class MyViewModel : ViewModel() {
         null
     )
 
+
+    //    private val productsInStorage = listOf(
+//        Product(
+//            "Pan",
+//            "1 barra de pan",
+//            12.02,
+//            ProductCategories.Horno,
+//            R.drawable.pan,
+//            true,
+//            true,
+//            50,
+//            false
+//        ),
+//        Product(
+//            "Manzana",
+//            "180g ",
+//            12.02,
+//            ProductCategories.Frutería,
+//            R.drawable.manzana,
+//            true,
+//            false,
+//            0,
+//            true
+//        ),
+//        Product(
+//            "Lechuga",
+//            "200g",
+//            12.02,
+//            ProductCategories.Frutería,
+//            R.drawable.lechuga,
+//            true,
+//            true,
+//            60,
+//            false
+//        ),
+//        Product(
+//            "Carne",
+//            "200g",
+//            12.02,
+//            ProductCategories.Carnicería,
+//            R.drawable.carne,
+//            true,
+//            true,
+//            60,
+//            false
+//        )
+//    )
+//
+//    fun getAllProducts(): List<Product> = productsInStorage
     private var userEnUso: User = userDefault
 
-    private val _selectedIcon = mutableStateOf("mainScreen")
+    private val _selectedIcon = mutableStateOf("homeScreen")
     val selectedIcon: State<String> = _selectedIcon
 
     fun selectIcon(screen: String) {
@@ -122,7 +163,6 @@ class MyViewModel : ViewModel() {
     val isCardValid = MutableLiveData(false)
     val isEmailExist = MutableLiveData(false)
 
-
     fun setUsuarioEnUso(user: User) {
         userEnUso = user
     }
@@ -166,7 +206,6 @@ class MyViewModel : ViewModel() {
                 isPasswordValid.value == true &&
                 isCardValid.value == true
     }
-
 
     fun register(navController: NavController) {
         val newUser = User(
@@ -254,7 +293,7 @@ class MyViewModel : ViewModel() {
         setUsuarioEnUso(userDefault)
         _isLogged.value = false
         clearFormData()
-        navController.navigate("mainScreen")
+        navController.navigate("homeScreen")
     }
 
     fun onLoginChanged(email: String, passwd: String) {
@@ -287,4 +326,3 @@ class MyViewModel : ViewModel() {
         return userEnUso.isFavorite(product)
     }
 }
-

@@ -1,4 +1,4 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.userScreens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,41 +20,42 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import kotlin.collections.chunked
-
+import coil.compose.AsyncImage
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.NormalImage
+import com.example.ladespensa24.R
+import com.example.ladespensa24.models.Purchase
+import com.example.ladespensa24.models.User
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
 fun PurchasesScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
-        navController.navigate("mainScreen") {
-            popUpTo("mainScreen") { inclusive = false }
+        navController.navigate("homeScreen") {
+            popUpTo("homeScreen") { inclusive = false }
             launchSingleTop = true
         }
     }
@@ -65,7 +65,7 @@ fun PurchasesScreen(navController: NavController, viewModel: MyViewModel) {
 
     Scaffold(
         content = { innerPadding ->
-            PurchasesContent(innerPadding, navController, user)
+            PurchasesContent(innerPadding, navController, user, viewModel)
         },
         bottomBar = {
             AppFooter(
@@ -81,7 +81,8 @@ fun PurchasesScreen(navController: NavController, viewModel: MyViewModel) {
 fun PurchasesContent(
     innerPadding: PaddingValues,
     navController: NavController,
-    user: User
+    user: User,
+    viewModel: MyViewModel
 ) {
 
     val purchases = remember {
@@ -107,7 +108,7 @@ fun PurchasesContent(
                     )
                 }
             } else {
-                LazyColumnPurchases(user, navController)
+                LazyColumnPurchases(user, navController, viewModel)
             }
         }
     }
@@ -147,7 +148,11 @@ fun HeaderPurchasesContent() {
 }
 
 @Composable
-fun PurchaseCard(purchase: Purchase, navController: NavController) {
+fun PurchaseCard(
+    purchase: Purchase,
+    imageUrls: Map<String, String?>,
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .padding(12.dp)
@@ -166,20 +171,21 @@ fun PurchaseCard(purchase: Purchase, navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                imagenes.forEach {
-                    NormalImage(
+                imagenes.forEach { producto ->
+                    val imageUrl = imageUrls[producto.id]
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Imagen del producto",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(64.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        image = it.getImage(),
-                        tint = null
+                            .clip(RoundedCornerShape(8.dp))
                     )
                 }
             }
 
-            // 🧾 Información de la compra
             Column(modifier = Modifier.padding(10.dp)) {
                 Text(
                     text = "Compra ${purchase.getId()}",
@@ -206,23 +212,36 @@ fun PurchaseCard(purchase: Purchase, navController: NavController) {
 }
 
 @Composable
-fun LazyColumnPurchases(user: User, navController: NavController) {
+fun LazyColumnPurchases(
+    user: User,
+    navController: NavController,
+    viewModel: MyViewModel
+) {
     val purchases = user.getPurchases()?.reversed() ?: emptyList()
+    val imageUrls by viewModel.imageUrls.collectAsState()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.White),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(purchases.size) { index ->
             val purchase = purchases[index]
-            PurchaseCard(purchase = purchase, navController = navController)
+            PurchaseCard(
+                purchase = purchase,
+                imageUrls = imageUrls,
+                navController = navController
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun PurchaseDetailsScreen(navController: NavController, purchase: Purchase) {
+fun PurchaseTicketScreen(navController: NavController, purchase: Purchase) {
 
     val productos = purchase.getInCartProducts()
 
@@ -235,8 +254,10 @@ fun PurchaseDetailsScreen(navController: NavController, purchase: Purchase) {
                 shape = CircleShape
             ) {
                 Text(
-                    "Volver a las compras",
+                    "Volver",
+                    color = Color.White,
                     fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily(Font(R.font.muli))
                 )
             }
@@ -273,7 +294,11 @@ fun PurchaseDetailsScreen(navController: NavController, purchase: Purchase) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            Divider(thickness = 1.dp, color = Color.Gray, modifier = Modifier.padding(vertical = 16.dp))
+            Divider(
+                thickness = 1.dp,
+                color = Color.Gray,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
 
             Text(
                 "Fecha: ${purchase.getDate()}",

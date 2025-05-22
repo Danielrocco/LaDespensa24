@@ -1,11 +1,9 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.models
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 open class User(
     private var name: String,
@@ -92,12 +90,12 @@ open class User(
         cartProducts?.forEach { product ->
             purchasedList.add(
                 InCartProduct(
+                    product.id,
                     product.getTitle(),
                     product.getDescription(),
                     product.getPrice(),
                     product.getCategory(),
-                    product.getImage(),
-                    product.getFeatured(),
+                    product.getIsFeatured(),
                     product.getIsDiscounted(),
                     product.getDiscount(),
                     product.getIsNew(),
@@ -106,13 +104,12 @@ open class User(
             )
         }
 
-        // ✅ Obtener número de tarjeta del usuario
         val cardNumber = getPayCard()
 
         val newPurchase = Purchase(
             inCartProducts = purchasedList,
             date = formattedDate,
-            cardNumber = cardNumber // ← aquí lo usas
+            cardNumber = cardNumber
         )
 
         if (purchases == null) {
@@ -159,12 +156,12 @@ open class User(
         } else {
             cartProducts?.add(
                 InCartProduct(
+                    product.id,
                     product.getTitle(),
                     product.getDescription(),
                     product.getPrice(),
                     product.getCategory(),
-                    product.getImage(),
-                    product.getFeatured(),
+                    product.getIsFeatured(),
                     product.getIsDiscounted(),
                     product.getDiscount(),
                     product.getIsNew(),

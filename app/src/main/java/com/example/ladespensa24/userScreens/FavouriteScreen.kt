@@ -1,6 +1,5 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.userScreens
 
-import android.widget.Space
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -24,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -39,13 +38,20 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.ladespensa24.AppFooter
+import com.example.ladespensa24.NormalImage
+import com.example.ladespensa24.R
+import com.example.ladespensa24.models.Product
+import com.example.ladespensa24.models.User
+import com.example.ladespensa24.viewmodel.MyViewModel
 
 @Composable
 fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
 
     BackHandler(enabled = true) {
-        navController.navigate("mainScreen") {
-            popUpTo("mainScreen") { inclusive = false }
+        navController.navigate("homeScreen") {
+            popUpTo("homeScreen") { inclusive = false }
             launchSingleTop = true
         }
     }
@@ -55,7 +61,7 @@ fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
 
     Scaffold(
         content = { innerPadding ->
-            FavouriteContent(innerPadding, navController, user)
+            FavouriteContent(innerPadding, navController, viewModel, user)
         },
         bottomBar = {
             AppFooter(
@@ -71,11 +77,15 @@ fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
 fun FavouriteContent(
     innerPadding: PaddingValues,
     navController: NavController,
+    viewModel: MyViewModel,
     user: User
 ) {
     val filteredFavouriteProducts = remember {
         user.getFavouriteProducts() ?: emptyList()
     }
+
+    val imageUrls by viewModel.imageUrls.collectAsState()
+
     Column {
         HeaderFavouriteContent()
         Box {
@@ -99,24 +109,36 @@ fun FavouriteContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.White)
-
                 ) {
-                    val chunkedProducts =
-                        filteredFavouriteProducts.chunked(2)
+                    val chunkedProducts = filteredFavouriteProducts.chunked(2)
+
                     items(chunkedProducts.size) { index ->
                         val productPair = chunkedProducts[index]
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            FavouriteProductCard(productPair[0], navController, Modifier.weight(1f))
+                            val product1 = productPair[0]
+                            val imageUrl1 = imageUrls[product1.id]
+
+                            FavouriteProductCard(
+                                product = product1,
+                                imageUrl = imageUrl1,
+                                navController = navController,
+                                modifier = Modifier.weight(1f)
+                            )
+
                             if (productPair.size > 1) {
+                                val product2 = productPair[1]
+                                val imageUrl2 = imageUrls[product2.id]
+
                                 FavouriteProductCard(
-                                    productPair[1],
-                                    navController,
-                                    Modifier.weight(1f)
+                                    product = product2,
+                                    imageUrl = imageUrl2,
+                                    navController = navController,
+                                    modifier = Modifier.weight(1f)
                                 )
                             } else {
                                 Spacer(modifier = Modifier.weight(1f))
@@ -125,10 +147,8 @@ fun FavouriteContent(
                     }
                 }
             }
-
         }
     }
-
 }
 
 @Composable
@@ -167,6 +187,7 @@ fun HeaderFavouriteContent() {
 @Composable
 fun FavouriteProductCard(
     product: Product,
+    imageUrl: String?,
     navController: NavController,
     modifier: Modifier
 ) {
@@ -187,13 +208,11 @@ fun FavouriteProductCard(
                     .fillMaxWidth()
                     .height(120.dp),
             ) {
-                Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    painter = painterResource(product.getImage()),
+                AsyncImage(
+                    model = imageUrl,
                     contentDescription = "Imagen del producto",
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             Row(

@@ -1,6 +1,5 @@
-package com.example.ladespensa24
+package com.example.ladespensa24.models
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -32,24 +30,26 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.ladespensa24.R
+import com.example.ladespensa24.viewmodel.MyViewModel
 import java.util.UUID
 
 enum class ProductCategories {
-    Frutería, Carnicería, Horno
+    FRUTERÍA, CARNICERÍA, HORNO
 }
 
 open class Product(
-    private var title: String,
-    private var description: String,
-    private var price: Double,
-    private var category: ProductCategories,
-    private var image: Int,
-    private var isFeatured: Boolean,
-    private var isDiscounted: Boolean,
-    private var discount: Int,
-    private var isNew: Boolean,
+    var id: String = "",
+    private var title: String = "",
+    private var description: String = "",
+    private var price: Double = 0.0,
+    private var category: ProductCategories = ProductCategories.FRUTERÍA,
+    private var isFeatured: Boolean = false,
+    private var isDiscounted: Boolean = false,
+    private var discount: Int = 0,
+    private var isNew: Boolean = false
 ) {
-
     fun getTitle(): String {
         return title
     }
@@ -62,11 +62,7 @@ open class Product(
         return category
     }
 
-    fun getImage(): Int {
-        return image
-    }
-
-    fun getFeatured(): Boolean {
+    fun getIsFeatured(): Boolean {
         return isFeatured
     }
 
@@ -92,18 +88,27 @@ open class Product(
 }
 
 open class InCartProduct(
+    id: String, // 🆕 nuevo campo
     title: String,
     description: String,
     price: Double,
     category: ProductCategories,
-    image: Int,
     isFeatured: Boolean,
     isDiscounted: Boolean,
     discount: Int,
     isNew: Boolean,
     private var units: Int
-) :
-    Product(title, description, price, category, image, isFeatured, isDiscounted, discount, isNew) {
+) : Product(
+    id,
+    title,
+    description,
+    price,
+    category,
+    isFeatured,
+    isDiscounted,
+    discount,
+    isNew
+) {
 
     fun getTotalPrice(): Double {
         val pricePerUnit = if (getIsDiscounted()) getDiscountedPrice() else getPrice()
@@ -126,7 +131,7 @@ open class InCartProduct(
 class Purchase(
     private val inCartProducts: List<InCartProduct>,
     private val date: String,
-    private val cardNumber: String, // NUEVO CAMPO
+    private val cardNumber: String,
     private val purchaseId: String = UUID.randomUUID().toString().take(8)
 ) {
     private val total: Double = inCartProducts.sumOf {
@@ -148,11 +153,11 @@ class Purchase(
 @Composable
 fun ProductCard(
     product: Product,
+    imageUrl: String?,
     navController: NavController,
-    viewModel: MyViewModel,
-    isLogged: Boolean
+    isLogged: Boolean,
+    viewModel: MyViewModel
 ) {
-
     Card(
         modifier = Modifier
             .padding(12.dp)
@@ -171,13 +176,13 @@ fun ProductCard(
                     .fillMaxWidth()
                     .height(120.dp),
             ) {
-                Image(
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Imagen del producto",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(),
-                    painter = painterResource(product.getImage()),
-                    contentDescription = "Imagen del producto",
-                    contentScale = ContentScale.Crop
+                        .fillMaxHeight()
                 )
             }
             Row(
@@ -221,8 +226,7 @@ fun ProductCard(
                 }
             }
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -248,7 +252,9 @@ fun ProductCard(
                         if (isLogged) {
                             viewModel.getUsuarioEnUso().addToCart(product, 1)
                             navController.navigate("cartScreen")
-                        } else navController.navigate("loginScreen")
+                        } else {
+                            navController.navigate("loginScreen")
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color.White,
@@ -269,4 +275,3 @@ fun ProductCard(
         }
     }
 }
-
