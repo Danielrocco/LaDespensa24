@@ -31,6 +31,7 @@ import com.example.ladespensa24.AppFooter
 import com.example.ladespensa24.R
 import com.example.ladespensa24.models.User
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun UserScreen(navController: NavController, viewModel: MyViewModel) {
@@ -41,7 +42,7 @@ fun UserScreen(navController: NavController, viewModel: MyViewModel) {
         }
     }
 
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
     val user = viewModel.getUsuarioEnUso()
 
     Scaffold(
@@ -128,14 +129,14 @@ fun HeaderProfileContent(user: User) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = ("Hola " + user.getName()).uppercase(),
+                text = ("Hola " + user.name).uppercase(),
                 fontSize = 20.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "Entrega en " + user.getAddress(),
+                text = "Entrega en " + user.address,
                 color = Color(0xFFEEEEEE),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -208,7 +209,7 @@ fun LogOut(
             .fillMaxWidth()
             .height(70.dp)
             .padding(12.dp),
-        onClick = { viewModel.logout(navController) },
+        onClick = { viewModel.logout(navController, viewModel) },
         shape = RoundedCornerShape(16.dp),
     ) {
         Box(

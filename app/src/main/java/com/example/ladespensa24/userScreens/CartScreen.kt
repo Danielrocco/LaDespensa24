@@ -57,6 +57,8 @@ import com.example.ladespensa24.R
 import com.example.ladespensa24.models.InCartProduct
 import com.example.ladespensa24.models.User
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.android.play.core.integrity.v
+import com.google.firebase.auth.FirebaseAuth
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -71,7 +73,7 @@ fun CartScreen(navController: NavController, viewModel: MyViewModel) {
 
     val user = viewModel.getUsuarioEnUso()
     viewModel.setEntireAmount(viewModel.getUsuarioEnUso())
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
     val entireAmount by viewModel.entireAmount.observeAsState(
         viewModel.getUsuarioEnUso().getEntireAmountOfCart()
     )
@@ -85,7 +87,7 @@ fun CartScreen(navController: NavController, viewModel: MyViewModel) {
             Button(
                 onClick = {
                     if (!isCartEmpty) {
-                        user.buyProducts()
+                        user.buyProducts(viewModel)
                         navController.navigate("purchasesScreen")
                     }
                 },
@@ -155,7 +157,7 @@ private fun MainCart(
     navController: NavController,
     viewModel: MyViewModel
 ) {
-    val cartProducts = user.getCart() ?: emptyList()
+    val cartProducts = user.cartProducts ?: emptyList()
 
     if (cartProducts.isEmpty()) {
         Box(
@@ -219,7 +221,7 @@ private fun LazyColumnCartProducts(
     navController: NavController,
     viewModel: MyViewModel
 ) {
-    val productsInHisCart = user.getCart()
+    val productsInHisCart = user.cartProducts
     val imageUrls by viewModel.imageUrls.collectAsState()
 
     LazyColumn(
@@ -252,12 +254,12 @@ fun CartProductCard(
     user: User,
     viewModel: MyViewModel
 ) {
-    var unidadesActuales by remember { mutableStateOf(inCartProduct.getUnits()) }
+    var unidadesActuales by remember { mutableStateOf(inCartProduct.units) }
 
-    val precioUnitario = if (inCartProduct.getIsDiscounted())
+    val precioUnitario = if (inCartProduct.isDiscounted)
         inCartProduct.getDiscountedPrice()
     else
-        inCartProduct.getPrice()
+        inCartProduct.price
 
     val totalPrecio = remember(unidadesActuales) {
         precioUnitario * unidadesActuales
@@ -269,7 +271,7 @@ fun CartProductCard(
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         onClick = {
-            navController.navigate("productScreen/${inCartProduct.getTitle()}") {
+            navController.navigate("productScreen/${inCartProduct.title}") {
                 launchSingleTop = true
             }
         },
@@ -301,13 +303,13 @@ fun CartProductCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = inCartProduct.getTitle(),
+                        text = inCartProduct.title,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = inCartProduct.getDescription(),
+                        text = inCartProduct.description,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontSize = 12.sp
                     )
@@ -351,7 +353,7 @@ fun CartProductCard(
                                 inCartProduct.removeUnits()
                                 viewModel.setEntireAmount(viewModel.getUsuarioEnUso())
                             } else {
-                                user.removeFromKart(inCartProduct.getTitle())
+                                user.removeFromKart(inCartProduct.title, viewModel)
                                 viewModel.setEntireAmount(viewModel.getUsuarioEnUso())
                             }
                         }

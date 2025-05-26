@@ -41,82 +41,48 @@ enum class ProductCategories {
 
 open class Product(
     var id: String = "",
-    private var title: String = "",
-    private var description: String = "",
-    private var price: Double = 0.0,
-    private var category: ProductCategories = ProductCategories.FRUTERÍA,
-    private var isFeatured: Boolean = false,
-    private var isDiscounted: Boolean = false,
-    private var discount: Int = 0,
-    private var isNew: Boolean = false
+    var title: String = "",
+    var description: String = "",
+    var price: Double = 0.0,
+    var category: ProductCategories = ProductCategories.FRUTERÍA,
+    var isFeatured: Boolean = false,
+    var isDiscounted: Boolean = false,
+    var discount: Int = 0,
+    var isNew: Boolean = false
 ) {
-    fun getTitle(): String {
-        return title
-    }
-
-    fun getPrice(): Double {
-        return price
-    }
-
-    fun getCategory(): ProductCategories {
-        return category
-    }
-
-    fun getIsFeatured(): Boolean {
-        return isFeatured
-    }
-
-    fun getIsDiscounted(): Boolean {
-        return isDiscounted
-    }
-
-    fun getDiscount(): Int {
-        return discount
-    }
-
-    fun getIsNew(): Boolean {
-        return isNew
-    }
-
-    fun getDescription(): String {
-        return description
-    }
-
-    fun getDiscountedPrice(): Double {
-        return (getPrice() - (getPrice() / 100 * getDiscount()))
-    }
+    fun getDiscountedPrice(): Double = (price - (price / 100 * discount))
 }
 
-open class InCartProduct(
-    id: String, // 🆕 nuevo campo
-    title: String,
-    description: String,
-    price: Double,
-    category: ProductCategories,
-    isFeatured: Boolean,
-    isDiscounted: Boolean,
-    discount: Int,
-    isNew: Boolean,
-    private var units: Int
-) : Product(
-    id,
-    title,
-    description,
-    price,
-    category,
-    isFeatured,
-    isDiscounted,
-    discount,
-    isNew
-) {
+open class InCartProduct() : Product() { // 🔥 Constructor sin argumentos
+    var units: Int = 1
 
-    fun getTotalPrice(): Double {
-        val pricePerUnit = if (getIsDiscounted()) getDiscountedPrice() else getPrice()
-        return pricePerUnit * units
+    constructor(
+        id: String,
+        title: String,
+        description: String,
+        price: Double,
+        category: ProductCategories,
+        isFeatured: Boolean,
+        isDiscounted: Boolean,
+        discount: Int,
+        isNew: Boolean,
+        units: Int
+    ) : this() { // 🔥 Llama al constructor sin argumentos
+        this.id = id
+        this.title = title
+        this.description = description
+        this.price = price
+        this.category = category
+        this.isFeatured = isFeatured
+        this.isDiscounted = isDiscounted
+        this.discount = discount
+        this.isNew = isNew
+        this.units = units
     }
 
-    fun getUnits(): Int {
-        return units
+    fun getTotalPrice(): Double {
+        val pricePerUnit = if (isDiscounted) getDiscountedPrice() else price
+        return pricePerUnit * units
     }
 
     fun addUnits() {
@@ -128,26 +94,27 @@ open class InCartProduct(
     }
 }
 
-class Purchase(
-    private val inCartProducts: List<InCartProduct>,
-    private val date: String,
-    private val cardNumber: String,
-    private val purchaseId: String = UUID.randomUUID().toString().take(8)
+data class Purchase(
+    var inCartProducts: List<InCartProduct> = emptyList(),
+    var date: String = "",
+    var cardNumber: String = "",
+    var purchaseId: String = UUID.randomUUID().toString().take(8)
 ) {
-    private val total: Double = inCartProducts.sumOf {
-        val precioUnitario = if (it.getIsDiscounted()) it.getDiscountedPrice() else it.getPrice()
-        precioUnitario * it.getUnits()
+    var total: Double = 0.0
+        private set
+
+    init {
+        calcularTotal()
     }
 
-    fun getInCartProducts() = inCartProducts
-    fun getDate() = date
-    fun getId() = purchaseId
-    fun getTotal() = total
-    fun getCardNumber() = cardNumber
-
-    fun getMaskedCardNumber(): String {
-        return "**** **** **** " + cardNumber.takeLast(4)
+    private fun calcularTotal() {
+        total = inCartProducts.sumOf {
+            val precioUnitario = if (it.isDiscounted) it.getDiscountedPrice() else it.price
+            precioUnitario * it.units
+        }
     }
+
+    fun getMaskedCardNumber(): String = "**** **** **** " + cardNumber.takeLast(4)
 }
 
 @Composable
@@ -164,7 +131,7 @@ fun ProductCard(
             .width(200.dp),
         shape = RoundedCornerShape(16.dp),
         onClick = {
-            navController.navigate("productScreen/${product.getTitle()}") {
+            navController.navigate("productScreen/${product.title}") {
                 launchSingleTop = true
             }
         },
@@ -192,32 +159,35 @@ fun ProductCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.padding(end = 10.dp) // 🔥 Añade espacio entre título/descripción y precio
+                ) {
                     Text(
-                        text = product.getTitle(),
+                        text = product.title,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
                     )
                     Text(
-                        text = product.getDescription(),
+                        text = product.description,
                         fontFamily = FontFamily(Font(R.font.muli)),
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+
                     )
                 }
                 Column {
                     Text(
-                        text = if (product.getIsDiscounted())
+                        text = if (product.isDiscounted)
                             String.format("%.2f €", product.getDiscountedPrice())
                         else
-                            String.format("%.2f €", product.getPrice()),
+                            String.format("%.2f €", product.price),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
                     Text(
-                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
-                        text = product.getPrice().toString() + " €",
+                        color = if (product.isDiscounted) Color.Black else Color.White,
+                        text = product.price.toString() + " €",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.LineThrough,
@@ -233,10 +203,10 @@ fun ProductCard(
                 Box(
                     modifier = Modifier
                         .padding(10.dp)
-                        .background(if (product.getIsDiscounted()) Color.Red else Color.White)
+                        .background(if (product.isDiscounted) Color.Red else Color.White)
                 ) {
                     Text(
-                        text = " -" + product.getDiscount().toString() + "% ",
+                        text = " -" + product.discount.toString() + "% ",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
@@ -250,7 +220,7 @@ fun ProductCard(
                         .padding(8.dp),
                     onClick = {
                         if (isLogged) {
-                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            viewModel.getUsuarioEnUso().addToCart(product, 1, viewModel)
                             navController.navigate("cartScreen")
                         } else {
                             navController.navigate("loginScreen")

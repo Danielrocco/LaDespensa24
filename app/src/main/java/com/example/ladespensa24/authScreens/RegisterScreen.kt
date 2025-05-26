@@ -133,7 +133,6 @@ private fun RegisterContent(modifier: Modifier, viewModel: MyViewModel, navContr
     }
 }
 
-
 @Composable
 private fun RegisterButton(registerEnable: Boolean, isEmailExists: Boolean, register: () -> Unit) {
     Text(

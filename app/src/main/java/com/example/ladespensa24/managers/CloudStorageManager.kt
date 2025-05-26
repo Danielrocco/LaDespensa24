@@ -9,7 +9,7 @@ class CloudStorageManager {
     private val storageRef = storage.reference
 
     fun getProductImage(product: Product, callback: (String?) -> Unit) {
-        val imageRef = storageRef.child("products/${product.getTitle().lowercase()}.png")
+        val imageRef = storageRef.child("products/${product.title.lowercase()}.png")
 
         imageRef.downloadUrl
             .addOnSuccessListener { uri ->

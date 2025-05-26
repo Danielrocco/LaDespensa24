@@ -49,6 +49,7 @@ import com.example.ladespensa24.R
 import com.example.ladespensa24.models.Purchase
 import com.example.ladespensa24.models.User
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun PurchasesScreen(navController: NavController, viewModel: MyViewModel) {
@@ -61,7 +62,7 @@ fun PurchasesScreen(navController: NavController, viewModel: MyViewModel) {
     }
 
     val user = viewModel.getUsuarioEnUso()
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         content = { innerPadding ->
@@ -86,7 +87,7 @@ fun PurchasesContent(
 ) {
 
     val purchases = remember {
-        user.getPurchases() ?: emptyList()
+        user.purchases ?: emptyList()
     }
 
     Column {
@@ -158,13 +159,13 @@ fun PurchaseCard(
             .padding(12.dp)
             .fillMaxWidth()
             .clickable {
-                navController.navigate("purchaseDetails/${purchase.getId()}")
+                navController.navigate("purchaseDetails/${purchase.purchaseId}")
             },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Column(Modifier.background(Color.White)) {
-            val productos = purchase.getInCartProducts()
+            val productos = purchase.inCartProducts
             val imagenes = productos.take(4)
 
             Row(
@@ -188,19 +189,19 @@ fun PurchaseCard(
 
             Column(modifier = Modifier.padding(10.dp)) {
                 Text(
-                    text = "Compra ${purchase.getId()}",
+                    text = "Compra ${purchase.purchaseId}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily(Font(R.font.muli))
                 )
                 Text(
-                    text = "Fecha: ${purchase.getDate()}",
+                    text = "Fecha: ${purchase.date}",
                     fontSize = 14.sp,
                     color = Color.Gray,
                     fontFamily = FontFamily(Font(R.font.muli))
                 )
                 Text(
-                    text = String.format("Total: %.2f €", purchase.getTotal()),
+                    text = String.format("Total: %.2f €", purchase.total),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = FontFamily(Font(R.font.muli)),
@@ -217,7 +218,7 @@ fun LazyColumnPurchases(
     navController: NavController,
     viewModel: MyViewModel
 ) {
-    val purchases = user.getPurchases()?.reversed() ?: emptyList()
+    val purchases = user.purchases?.reversed() ?: emptyList()
     val imageUrls by viewModel.imageUrls.collectAsState()
 
     LazyColumn(
@@ -243,7 +244,7 @@ fun LazyColumnPurchases(
 @Composable
 fun PurchaseTicketScreen(navController: NavController, purchase: Purchase) {
 
-    val productos = purchase.getInCartProducts()
+    val productos = purchase.inCartProducts
 
     Scaffold(
         floatingActionButton = {
@@ -284,8 +285,8 @@ fun PurchaseTicketScreen(navController: NavController, purchase: Purchase) {
 
             productos.forEach {
                 Text(
-                    "${it.getTitle()} x${it.getUnits()} - %.2f € p/u > %.2f €".format(
-                        if (it.getIsDiscounted()) it.getDiscountedPrice() else it.getPrice(),
+                    "${it.title} x${it.units} - %.2f € p/u > %.2f €".format(
+                        if (it.isDiscounted) it.getDiscountedPrice() else it.price,
                         it.getTotalPrice()
                     ),
                     fontSize = 14.sp,
@@ -301,7 +302,7 @@ fun PurchaseTicketScreen(navController: NavController, purchase: Purchase) {
             )
 
             Text(
-                "Fecha: ${purchase.getDate()}",
+                "Fecha: ${purchase.date}",
                 fontSize = 14.sp,
                 fontFamily = FontFamily(Font(R.font.muli))
             )
@@ -311,7 +312,7 @@ fun PurchaseTicketScreen(navController: NavController, purchase: Purchase) {
                 fontFamily = FontFamily(Font(R.font.muli))
             )
             Text(
-                "Total gastado: %.2f €".format(purchase.getTotal()),
+                "Total gastado: %.2f €".format(purchase.total),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily(Font(R.font.muli))

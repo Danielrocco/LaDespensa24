@@ -42,11 +42,12 @@ import com.example.ladespensa24.AppFooter
 import com.example.ladespensa24.NormalImage
 import com.example.ladespensa24.R
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun UserInfoScreen(navController: NavController, viewModel: MyViewModel) {
 
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         content = { innerPadding ->
@@ -68,10 +69,10 @@ fun UserInfoContent(innerPadding: PaddingValues, navController: NavController, v
     val context = LocalContext.current
     val user = viewModel.getUsuarioEnUso()
 
-    var nameText by remember { mutableStateOf(user.getName()) }
-    var surnameText by remember { mutableStateOf(user.getSurname()) }
-    var addressText by remember { mutableStateOf(user.getAddress()) }
-    var payCardText by remember { mutableStateOf(user.getPayCard()) }
+    var nameText by remember { mutableStateOf(user.name) }
+    var surnameText by remember { mutableStateOf(user.surname) }
+    var addressText by remember { mutableStateOf(user.address) }
+    var payCardText by remember { mutableStateOf(user.payCard) }
 
     val isNameValid = nameText.isNotBlank()
     val isSurnameValid = surnameText.isNotBlank()
@@ -125,10 +126,12 @@ fun UserInfoContent(innerPadding: PaddingValues, navController: NavController, v
                 enabled = isPayCardValid,
                 onClick = {
                     if (isPayCardValid) {
-                        user.setName(nameText)
-                        user.setSurname(surnameText)
-                        user.setAddress(addressText)
-                        user.setPayCard(payCardText)
+                        user.name = nameText
+                        user.surname = surnameText
+                        user.address = addressText
+                        user.payCard = payCardText
+
+                        viewModel.actualizarUsuarioEnFirestore(user) // 🔥 Guardar cambios en Firebase
 
                         Toast.makeText(context, "Datos guardados correctamente", Toast.LENGTH_SHORT).show()
                         navController.navigate("userScreen") {

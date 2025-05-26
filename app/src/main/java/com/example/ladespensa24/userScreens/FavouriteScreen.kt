@@ -45,6 +45,7 @@ import com.example.ladespensa24.R
 import com.example.ladespensa24.models.Product
 import com.example.ladespensa24.models.User
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
@@ -57,7 +58,7 @@ fun FavouriteScreen(navController: NavController, viewModel: MyViewModel) {
     }
 
     val user = viewModel.getUsuarioEnUso()
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         content = { innerPadding ->
@@ -81,7 +82,7 @@ fun FavouriteContent(
     user: User
 ) {
     val filteredFavouriteProducts = remember {
-        user.getFavouriteProducts() ?: emptyList()
+        user.favouriteProducts ?: emptyList()
     }
 
     val imageUrls by viewModel.imageUrls.collectAsState()
@@ -196,7 +197,7 @@ fun FavouriteProductCard(
             .padding(12.dp),
         shape = RoundedCornerShape(16.dp),
         onClick = {
-            navController.navigate("productScreen/${product.getTitle()}") {
+            navController.navigate("productScreen/${product.title}") {
                 launchSingleTop = true
             }
         },
@@ -222,32 +223,36 @@ fun FavouriteProductCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.padding(end = 10.dp) // 🔥 Añade espacio entre título/descripción y precio
+                ) {
                     Text(
-                        text = product.getTitle(),
+                        text = product.title,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                        fontSize = 14.sp,
+
+                        )
                     Text(
-                        text = product.getDescription(),
+                        text = product.description,
                         fontFamily = FontFamily(Font(R.font.muli)),
-                        fontSize = 12.sp
-                    )
+                        fontSize = 10.sp,
+
+                        )
                 }
                 Column {
                     Text(
-                        text = if (product.getIsDiscounted())
+                        text = if (product.isDiscounted)
                             String.format("%.2f €", product.getDiscountedPrice())
                         else
-                            String.format("%.2f €", product.getPrice()),
+                            String.format("%.2f €", product.price),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
+                        fontSize = 11.sp
                     )
                     Text(
-                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
-                        text = "${product.getPrice()} €",
+                        color = if (product.isDiscounted) Color.Black else Color.White,
+                        text = "${product.price} €",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.LineThrough,

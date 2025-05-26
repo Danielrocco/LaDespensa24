@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import com.example.ladespensa24.NormalImage
 import com.example.ladespensa24.R
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: MyViewModel) {
@@ -126,7 +127,7 @@ fun GoRegisterButton(navController: NavController, viewModel: MyViewModel) {
 private fun LoginButton(
     isAlertEnable: Boolean,
     viewModel: MyViewModel,
-    navController: NavController
+    navController: NavController,
 ) {
     Text(
         text = "No se encontro ese correo o la contraseña es incorrecta",

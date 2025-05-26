@@ -57,10 +57,12 @@ import coil.compose.AsyncImage
 import com.example.ladespensa24.models.Product
 import com.example.ladespensa24.models.ProductCard
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MyViewModel) {
-    val isLogged by viewModel.isLogged.observeAsState(false)
+
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         topBar = {
@@ -383,14 +385,18 @@ fun HomeScreenContent(
             }
         }
     }
-
 }
 
 @Composable
 fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val products by viewModel.products.collectAsState()
     val imageUrls by viewModel.imageUrls.collectAsState()
-    val discountedProducts = products.filter { it.getIsDiscounted() }
+    val discountedProducts = products.filter { it.isDiscounted }
+
+    LaunchedEffect(products) {
+        Log.d("FEATURED_PRODUCTS", "Cantidad total: ${products.size}")
+        Log.d("FEATURED_PRODUCTS", "Featured: ${products.count { it.isDiscounted }}")
+    }
 
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(discountedProducts.size) { index ->
@@ -405,7 +411,12 @@ fun DiscountedLazyRow(navController: NavController, viewModel: MyViewModel, isLo
 fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val products by viewModel.products.collectAsState()
     val imageUrls by viewModel.imageUrls.collectAsState()
-    val newProducts = products.filter { it.getIsNew() }
+    val newProducts = products.filter { it.isNew }
+
+    LaunchedEffect(products) {
+        Log.d("FEATURED_PRODUCTS", "Cantidad total: ${products.size}")
+        Log.d("FEATURED_PRODUCTS", "Featured: ${products.count { it.isNew }}")
+    }
 
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(newProducts.size) { index ->
@@ -420,11 +431,19 @@ fun NewsLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: 
 fun FeaturedLazyRow(navController: NavController, viewModel: MyViewModel, isLogged: Boolean) {
     val products by viewModel.products.collectAsState()
     val imageUrls by viewModel.imageUrls.collectAsState()
-    val featuredProducts = products.filter { it.getIsFeatured() }
+
+    LaunchedEffect(products) {
+        Log.d("DEBUG_FEATURED", "Cantidad total de productos: ${products.size}")
+        products.forEach { product ->
+            Log.d("DEBUG_FEATURED", "Producto: ${product.title} | isFeatured=${product.isFeatured}")
+        }
+    }
+
+    val featuredProducts = products.filter { it.isFeatured }
 
     LaunchedEffect(products) {
         Log.d("FEATURED_PRODUCTS", "Cantidad total: ${products.size}")
-        Log.d("FEATURED_PRODUCTS", "Featured: ${products.count { it.getIsFeatured() }}")
+        Log.d("FEATURED_PRODUCTS", "Featured: ${products.count { it.isFeatured }}")
     }
 
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -522,7 +541,7 @@ fun NewProductCard(
             .padding(12.dp)
             .width(260.dp),
         onClick = {
-            navController.navigate("productScreen/${product.getTitle()}") {
+            navController.navigate("productScreen/${product.title}") {
                 launchSingleTop = true
             }
         },
@@ -559,30 +578,30 @@ fun NewProductCard(
             ) {
                 Column {
                     Text(
-                        text = product.getTitle(),
+                        text = product.title,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = product.getDescription(),
+                        text = product.description,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontSize = 12.sp
                     )
                 }
                 Column {
                     Text(
-                        text = if (product.getIsDiscounted())
+                        text = if (product.isDiscounted)
                             String.format("%.2f €", product.getDiscountedPrice())
                         else
-                            String.format("%.2f €", product.getPrice()),
+                            String.format("%.2f €", product.price),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
                     Text(
-                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
-                        text = product.getPrice().toString() + " €",
+                        color = if (product.isDiscounted) Color.Black else Color.White,
+                        text = product.price.toString() + " €",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.LineThrough,
@@ -601,7 +620,7 @@ fun NewProductCard(
                         .padding(8.dp),
                     onClick = {
                         if (isLogged) {
-                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            viewModel.getUsuarioEnUso().addToCart(product, 1, viewModel)
                             navController.navigate("cartScreen")
                         } else {
                             navController.navigate("loginScreen")

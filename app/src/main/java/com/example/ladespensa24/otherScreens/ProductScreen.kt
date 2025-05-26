@@ -55,11 +55,12 @@ import com.example.ladespensa24.R
 import com.example.ladespensa24.models.Product
 import com.example.ladespensa24.models.ProductCard
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProductScreen(navController: NavController, viewModel: MyViewModel, product: Product) {
 
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         content = { innerPadding ->
@@ -110,7 +111,7 @@ fun ProductScreenContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = product.getTitle(),
+                    text = product.title,
                     fontFamily = FontFamily(Font(R.font.muli)),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -119,7 +120,7 @@ fun ProductScreenContent(
                 IconButton(
                     onClick = {
                         if (isLogged) {
-                            viewModel.toggleFavorite(product)
+                            viewModel.toggleFavorite(product, viewModel)
                             isFavorite = viewModel.isProductFavorite(product)
                         } else {
                             navController.navigate("loginScreen")
@@ -136,7 +137,7 @@ fun ProductScreenContent(
         }
         item {
             Text(
-                text = product.getDescription(),
+                text = product.description,
                 fontFamily = FontFamily(Font(R.font.muli)),
                 color = Color.Gray,
                 fontSize = 20.sp,
@@ -154,17 +155,17 @@ fun ProductScreenContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = if (product.getIsDiscounted())
+                    text = if (product.isDiscounted)
                         String.format("%.2f €", product.getDiscountedPrice())
                     else
-                        String.format("%.2f €", product.getPrice()),
+                        String.format("%.2f €", product.price),
                     fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                 )
                 Text(
-                    text = product.getPrice().toString() + " €",
-                    color = if (product.getIsDiscounted()) Color.Gray else Color.White,
+                    text = product.price.toString() + " €",
+                    color = if (product.isDiscounted) Color.Gray else Color.White,
                     fontFamily = FontFamily(Font(R.font.muli)),
                     fontWeight = FontWeight.Bold,
                     textDecoration = TextDecoration.LineThrough,
@@ -207,7 +208,7 @@ fun ProductScreenContent(
         }
         item {
             val priceToShow =
-                if (product.getIsDiscounted()) product.getDiscountedPrice() else product.getPrice()
+                if (product.isDiscounted) product.getDiscountedPrice() else product.price
 
             Button(
                 modifier = Modifier
@@ -220,7 +221,7 @@ fun ProductScreenContent(
                 ),
                 onClick = {
                     if (isLogged) {
-                        viewModel.getUsuarioEnUso().addToCart(product, unidades)
+                        viewModel.getUsuarioEnUso().addToCart(product, unidades, viewModel)
                         navController.navigate("cartScreen")
                     } else navController.navigate("loginScreen")
                 }
@@ -274,7 +275,7 @@ fun RelatedLazyRow(
 
     val relatedProducts = remember(currentProduct, products) {
         products.filter {
-            it.getCategory() == currentProduct.getCategory() && it.getTitle() != currentProduct.getTitle()
+            it.category == currentProduct.category && it.title != currentProduct.title
         }
     }
 

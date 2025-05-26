@@ -57,10 +57,11 @@ import com.example.ladespensa24.AppFooter
 import com.example.ladespensa24.R
 import com.example.ladespensa24.models.Product
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun SearchScreen(navController: NavController, viewModel: MyViewModel) {
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         containerColor = Color.White,
@@ -98,7 +99,7 @@ private fun SearchScreenContent(
     val products by viewModel.products.collectAsState()
 
     val filteredProducts = remember(query, products) {
-        products.filter { it.getTitle().contains(query, ignoreCase = true) }
+        products.filter { it.title.startsWith(query, ignoreCase = true) }
     }
 
     Box(
@@ -237,7 +238,7 @@ fun FilteredProductCard(
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         onClick = {
-            navController.navigate("productScreen/${product.getTitle()}") {
+            navController.navigate("productScreen/${product.title}") {
                 launchSingleTop = true
             }
         },
@@ -267,30 +268,30 @@ fun FilteredProductCard(
             ) {
                 Column {
                     Text(
-                        text = product.getTitle(),
+                        text = product.title,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = product.getDescription(),
+                        text = product.description,
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontSize = 12.sp
                     )
                 }
                 Column {
                     Text(
-                        text = if (product.getIsDiscounted())
+                        text = if (product.isDiscounted)
                             String.format("%.2f €", product.getDiscountedPrice())
                         else
-                            String.format("%.2f €", product.getPrice()),
+                            String.format("%.2f €", product.price),
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
                     Text(
-                        color = if (product.getIsDiscounted()) Color.Black else Color.White,
-                        text = product.getPrice().toString() + " €",
+                        color = if (product.isDiscounted) Color.Black else Color.White,
+                        text = product.price.toString() + " €",
                         fontFamily = FontFamily(Font(R.font.muli)),
                         fontWeight = FontWeight.Bold,
                         textDecoration = TextDecoration.LineThrough,
@@ -310,7 +311,7 @@ fun FilteredProductCard(
                         .padding(8.dp),
                     onClick = {
                         if (isLogged) {
-                            viewModel.getUsuarioEnUso().addToCart(product, 1)
+                            viewModel.getUsuarioEnUso().addToCart(product, 1, viewModel)
                             navController.navigate("cartScreen")
                         } else navController.navigate("loginScreen")
                     },

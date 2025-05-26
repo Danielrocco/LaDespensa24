@@ -2,6 +2,7 @@ package com.example.ladespensa24
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.ladespensa24.ui.theme.LaDespensa24Theme
@@ -30,32 +33,43 @@ import com.example.ladespensa24.userScreens.PurchasesScreen
 import com.example.ladespensa24.userScreens.UserInfoScreen
 import com.example.ladespensa24.userScreens.UserScreen
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         FirebaseApp.initializeApp(this)
+        auth = FirebaseAuth.getInstance()
 
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
             LaDespensa24Theme {
-                MyApp()
+                MyApp(navController)
             }
         }
+
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.transparent)
         window.navigationBarColor = ContextCompat.getColor(this, android.R.color.black)
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
 @Composable
-fun MyApp() {
-    val navController = rememberNavController()
+fun MyApp(navController: NavHostController) {
+    Log.d("MainActivity", "🔥 MyApp se está ejecutando")
+
     val viewModel: MyViewModel = viewModel()
 
+    Log.d("MainActivity", "✅ MyViewModel creado con éxito")
     NavHost(navController = navController, startDestination = "homeScreen") {
         composable("homeScreen") { HomeScreen(navController, viewModel) }
         composable("loginScreen") { LoginScreen(navController, viewModel) }
@@ -93,7 +107,7 @@ fun MyApp() {
         ) { backStackEntry ->
             val purchaseId = backStackEntry.arguments?.getString("purchaseId")
             val purchase = purchaseId?.let { id ->
-                viewModel.getUsuarioEnUso().getPurchases()?.find { it.getId() == id }
+                viewModel.getUsuarioEnUso().purchases?.find { it.purchaseId == id }
             }
             if (purchase != null) {
                 PurchaseTicketScreen(navController, purchase)
@@ -103,5 +117,5 @@ fun MyApp() {
 }
 
 private fun getProductByName(productName: String, viewModel: MyViewModel): Product? {
-    return viewModel.products.value.find { it.getTitle() == productName }
+    return viewModel.products.value.find { it.title == productName }
 }

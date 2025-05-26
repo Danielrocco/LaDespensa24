@@ -41,6 +41,7 @@ import com.example.ladespensa24.managers.CloudStorageManager
 import com.example.ladespensa24.models.User
 import com.example.ladespensa24.userScreens.FavouriteProductCard
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlin.collections.chunked
 
 
@@ -59,7 +60,7 @@ fun FilteredCategoriesScreen(
     }
 
     val user = viewModel.getUsuarioEnUso()
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         content = { innerPadding ->
@@ -86,7 +87,7 @@ fun FilteredCategoriesContent(
     val products by viewModel.products.collectAsState()
     val cloudStorageManager = remember { CloudStorageManager() }
     val filteredProducts = remember(selectedCategory) {
-        products.filter { it.getCategory().name.equals(selectedCategory, ignoreCase = true) }
+        products.filter { it.category.name.equals(selectedCategory, ignoreCase = true) }
     }
 
     Column {

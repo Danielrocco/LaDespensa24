@@ -40,6 +40,7 @@ import com.example.ladespensa24.AppFooter
 import com.example.ladespensa24.AppHeader
 import com.example.ladespensa24.R
 import com.example.ladespensa24.viewmodel.MyViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun CategoriesScreen(navController: NavController, viewModel: MyViewModel) {
@@ -51,7 +52,7 @@ fun CategoriesScreen(navController: NavController, viewModel: MyViewModel) {
         }
     }
 
-    val isLogged by viewModel.isLogged.observeAsState(false)
+    val isLogged by viewModel.isLogged
 
     Scaffold(
         topBar = {
